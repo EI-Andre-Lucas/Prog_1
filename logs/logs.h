@@ -1,19 +1,14 @@
 #ifndef LOGS_H
 #define LOGS_H
-
-typedef enum{
-    LOGGING,
-}ACTION;
-
 typedef struct logs
 {
     int id;
-    char mensagem
-
-
+    char mensagem[300];
 }LOGS;
 
+void logmessage(char mensagem[300], USERS user);
 
+int getLastLogNumber();
 
-#endif LOGS_H
+#endif
 
