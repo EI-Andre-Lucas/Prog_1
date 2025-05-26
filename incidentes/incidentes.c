@@ -134,8 +134,8 @@ void designarIncidente(Incidente* incidente, const char* novo_tecnico, const cha
     incidente->tecnico_responsavel[sizeof(incidente->tecnico_responsavel) - 1] = '\0';
 }
 
-void guardarIncidentes(Incidente* lista, const char* arquivo) {
-    FILE* file = fopen(arquivo, "wb");
+void guardarIncidentes(Incidente* lista, const char* ficheiro) {
+    FILE* file = fopen(ficheiro, "wb");
     if (file == NULL) return;
 
     Incidente* atual = lista;
@@ -160,8 +160,8 @@ void guardarIncidentes(Incidente* lista, const char* arquivo) {
     fclose(file);
 }
 
-Incidente* carregarIncidentes(const char* arquivo) {
-    FILE* file = fopen(arquivo, "rb");
+Incidente* carregarIncidentes(const char* ficheiro) {
+    FILE* file = fopen(ficheiro, "rb");
     if (file == NULL) return NULL;
 
     Incidente* lista = NULL;
@@ -205,8 +205,8 @@ Incidente* carregarIncidentes(const char* arquivo) {
     return lista;
 }
 
-void criarRelatorio(Incidente* lista, const char* arquivo, time_t inicio, time_t fim) {
-    FILE* file = fopen(arquivo, "w");
+void criarRelatorio(Incidente* lista, const char* ficheiro, time_t inicio, time_t fim) {
+    FILE* file = fopen(ficheiro, "w");
     if (file == NULL) return;
 
     fprintf(file, "Relatório de Incidentes\n");

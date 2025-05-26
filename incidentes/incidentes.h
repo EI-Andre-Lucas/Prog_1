@@ -64,9 +64,9 @@ void atualizarEstadoIncidente(Incidente* incidente, EstadoIncidente novo_estado)
 void adicionarAcaoHistorico(Incidente* incidente, const char* descricao, const char* tecnico);
 void adicionarFerramenta(Incidente* incidente, const char* nome);
 void designarIncidente(Incidente* incidente, const char* novo_tecnico, const char* motivo);
-void guardarIncidentes(Incidente* lista, const char* arquivo);
-Incidente* carregarIncidentes(const char* arquivo);
-void criarRelatorio(Incidente* lista, const char* arquivo, time_t inicio, time_t fim);
+void guardarIncidentes(Incidente* lista, const char* ficheiro);
+Incidente* carregarIncidentes(const char* ficheiro);
+void criarRelatorio(Incidente* lista, const char* ficheiro, time_t inicio, time_t fim);
 void fornecerListaIncidentes(Incidente* lista);
 
 #endif // INCIDENTES_H
