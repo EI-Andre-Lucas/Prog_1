@@ -4,8 +4,8 @@
 #include "../incidentes/incidentes.h"
 
 // Funções de interface
-void limparTela();
-void pressionarEnter();
+void limparEcra();
+void clicarEnter();
 void menuLoginRegistro();
 void menuPrincipal(USERS* user);
 void menuAdministrador(USERS* user);
