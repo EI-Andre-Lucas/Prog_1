@@ -4,6 +4,7 @@
 #include "users/users.h"
 #include "logs/logs.h"
 #include "menus/menus.h"
+#include "incidentes/incidentes.h"
 
 typedef struct elem{
     USERS users;
@@ -11,9 +12,11 @@ typedef struct elem{
     struct Elem *anterior;
 }ELEM;
 
+// Variável global para a lista de incidentes
+Incidente* lista_incidentes = NULL;
 
 int main(){
-    setlocale(LC_ALL, "portuguese");
+    setlocale(LC_ALL, "Portuguese");
     FirstUserCreator();
     logout();
     printf("============================================================================================\n");
@@ -21,5 +24,16 @@ int main(){
     printf("==Nesta aplicação irá usar um menu do qual tera que usar numeros para navegar entre menus.==\n");
     printf("============================================================================================\n");
     clickEnter();
-    menu_login_reg();
+
+    // Carregar incidentes do arquivo
+    lista_incidentes = carregarIncidentes("incidentes.bin");
+
+    // Iniciar o menu de login/registro
+    menuLoginRegistro();
+
+    // Salvar incidentes antes de sair
+    guardarIncidentes(lista_incidentes, "incidentes.bin");
+    liberarListaIncidentes(lista_incidentes);
+
+    return 0;
 }
