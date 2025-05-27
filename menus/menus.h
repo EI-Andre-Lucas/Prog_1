@@ -6,7 +6,7 @@
 // Funções de interface
 void limparEcra();
 void clicarEnter();
-void menuLoginRegistro();
+void menuLoginRegisto();
 void menuPrincipal(USERS* user);
 void menuAdministrador(USERS* user);
 void menuTecnico(USERS* user);
@@ -16,12 +16,12 @@ void menuIncidentesAdmin(Incidente** lista_incidentes);
 void menuIncidentesTecnico(Incidente** lista_incidentes, const char* tecnico);
 
 // Funções auxiliares de incidentes
-void listarIncidentes(Incidente* lista);
-void listarIncidentesPorEstado(Incidente* lista, EstadoIncidente estado);
-void listarIncidentesPorSeveridade(Incidente* lista, Severidade severidade);
-void listarIncidentesPorTipo(Incidente* lista, TipoIncidente tipo);
-void listarIncidentesPorTecnico(Incidente* lista, const char* tecnico);
-void listarIncidentesPorPeriodo(Incidente* lista, time_t inicio, time_t fim);
+void fornecerIncidentes(Incidente* lista);
+void fornecerIncidentesPorEstado(Incidente* lista, EstadoIncidente estado);
+void fornecerIncidentesPorSeveridade(Incidente* lista, Severidade severidade);
+void fornecerIncidentesPorTipo(Incidente* lista, TipoIncidente tipo);
+void fornecerIncidentesPorTecnico(Incidente* lista, const char* tecnico);
+void fornecerIncidentesPorPeriodo(Incidente* lista, time_t inicio, time_t fim);
 void mostrarDetalhesIncidente(Incidente* incidente);
 void mostrarHistoricoIncidente(Incidente* incidente);
 void mostrarFerramentasUtilizadas(Incidente* incidente);

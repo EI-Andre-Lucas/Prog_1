@@ -21,19 +21,19 @@ int main(){
     logout();
     printf("============================================================================================\n");
     printf("=========Bem vindo ao Sistema de Gestão de Ciberincidentes e Respostas de Segurança=========\n");
-    printf("==Nesta aplicação irá usar um menu do qual tera que usar numeros para navegar entre menus.==\n");
+    printf("==Nesta aplicação irá usar um menu do qual terá que usar números para navegar entre menus.==\n");
     printf("============================================================================================\n");
     clickEnter();
 
-    // Carregar incidentes do arquivo
+    // Carregar incidentes do ficheiro
     lista_incidentes = carregarIncidentes("incidentes.bin");
 
-    // Iniciar o menu de login/registro
-    menuLoginRegistro();
+    // Iniciar o menu de login/registo
+    menuLoginRegisto();
 
     // Salvar incidentes antes de sair
     guardarIncidentes(lista_incidentes, "incidentes.bin");
-    liberarListaIncidentes(lista_incidentes);
+    fornecerListaIncidentes(lista_incidentes);
 
     return 0;
 }

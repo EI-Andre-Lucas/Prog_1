@@ -28,7 +28,7 @@ USERS getsessao(){
     FILE *fp = fopen("sessao.dat","rb");
     if(fp == NULL){
         printf("\nErro ao abrir o ficheiro");
-        user.username[0] = '\0';  // Retorna um usuário vazio em caso de erro
+        user.username[0] = '\0';  // Retorna um user vazio em caso de erro
         return user;
     }
     fread(&user, sizeof(USERS), 1, fp);
@@ -113,7 +113,7 @@ void login(){
 void registo(){
     USERS user;
     char TempPassword[100];
-    printf("| Register |\n");
+    printf("| Registar |\n");
     printf("Se por um acaso se tenha enganado e entrou neste menu por engano escreva \";\" no username e voltará ao menu anterior\n");
     printf("\nUsername: ");
     fgets(user.username, 100, stdin);
@@ -124,7 +124,7 @@ void registo(){
     printf("\nPrimeiro Nome: ");
     fgets(user.PrimeiroNome, 100, stdin);
     remove_newline(user.PrimeiroNome);
-    printf("\nUltimo Nome: ");
+    printf("\nÚltimo Nome: ");
     fgets(user.UltimoNome, 100, stdin);
     remove_newline(user.UltimoNome);
     printf("\nEmail: ");
