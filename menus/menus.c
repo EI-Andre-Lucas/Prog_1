@@ -74,10 +74,10 @@ void menuAdministrador(USERS* user) {
                 menuIncidentesAdmin(&lista_incidentes);
                 break;
             case 2:
-                // Implementar menu de gestão de usuários
+                menuGestaoUsers();
                 break;
             case 3:
-                // Implementar visualização de logs
+                menuLogs();
                 break;
             case 0:
                 logout();
@@ -510,4 +510,170 @@ void calcularTempoMedioResolucao(Incidente* lista, const char* tecnico) {
     } else {
         printf("\nNenhum incidente resolvido encontrado para %s\n", tecnico);
     }
+}
+
+void menuGestaoUsers() {
+    int opcao;
+    do {
+        limparEcra();
+        printf("\n=== Menu de Gestão de Users ===\n");
+        printf("1. Listar todos os users\n");
+        printf("2. Adicionar novo user\n");
+        printf("3. Remover user\n");
+        printf("4. Modificar detalhes do user\n");
+        printf("5. Alterar role do user\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+        getchar();
+
+        switch (opcao) {
+            case 1: {
+                fornecerTodosUsers();
+                clicarEnter();
+                break;
+            }
+            case 2: {
+                char username[50], password[50];
+                int tipo;
+                printf("Username: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = 0;
+                
+                printf("Password: ");
+                fgets(password, sizeof(password), stdin);
+                password[strcspn(password, "\n")] = 0;
+                
+                printf("Tipo (1-Admin, 2-Técnico): ");
+                scanf("%d", &tipo);
+                getchar();
+                
+                if (adicionarUser(username, password, tipo)) {
+                    printf("User adicionado com sucesso!\n");
+                } else {
+                    printf("Erro ao adicionar user!\n");
+                }
+                clicarEnter();
+                break;
+            }
+            case 3: {
+                char username[50];
+                printf("Username do user a remover: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = 0;
+                
+                if (removerUser(username)) {
+                    printf("User removido com sucesso!\n");
+                } else {
+                    printf("Erro ao remover user!\n");
+                }
+                clicarEnter();
+                break;
+            }
+            case 4: {
+                char username[50], nova_password[50];
+                printf("Username do user a modificar: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = 0;
+                
+                printf("Nova password: ");
+                fgets(nova_password, sizeof(nova_password), stdin);
+                nova_password[strcspn(nova_password, "\n")] = 0;
+                
+                if (modificarUser(username, nova_password)) {
+                    printf("User modificado com sucesso!\n");
+                } else {
+                    printf("Erro ao modificar user!\n");
+                }
+                clicarEnter();
+                break;
+            }
+            case 5: {
+                char username[50];
+                int novo_tipo;
+                printf("Username do user: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = 0;
+                
+                printf("Novo tipo (1-Admin, 2-Técnico): ");
+                scanf("%d", &novo_tipo);
+                getchar();
+                
+                if (alterarRoleUser(username, novo_tipo)) {
+                    printf("Role do user alterada com sucesso!\n");
+                } else {
+                    printf("Erro ao alterar role do user!\n");
+                }
+                clicarEnter();
+                break;
+            }
+        }
+    } while (opcao != 0);
+}
+
+void menuLogs() {
+    int opcao;
+    do {
+        limparEcra();
+        printf("\n=== Menu de Logs do Sistema ===\n");
+        printf("1. Ver todos os logs\n");
+        printf("2. Filtrar logs por data\n");
+        printf("3. Filtrar logs por user\n");
+        printf("4. Filtrar logs por tipo de ação\n");
+        printf("0. Voltar\n");
+        printf("Escolha uma opção: ");
+        scanf("%d", &opcao);
+        getchar();
+
+        switch (opcao) {
+            case 1: {
+                mostrarTodosLogs();
+                clicarEnter();
+                break;
+            }
+            case 2: {
+                char data_inicio[20], data_fim[20];
+                struct tm tm_inicio, tm_fim;
+                time_t inicio, fim;
+                
+                printf("Data inicial (DD/MM/AAAA): ");
+                fgets(data_inicio, sizeof(data_inicio), stdin);
+                data_inicio[strcspn(data_inicio, "\n")] = 0;
+                
+                printf("Data final (DD/MM/AAAA): ");
+                fgets(data_fim, sizeof(data_fim), stdin);
+                data_fim[strcspn(data_fim, "\n")] = 0;
+                
+                strptime(data_inicio, "%d/%m/%Y", &tm_inicio);
+                strptime(data_fim, "%d/%m/%Y", &tm_fim);
+                
+                inicio = mktime(&tm_inicio);
+                fim = mktime(&tm_fim);
+                
+                mostrarLogsPorPeriodo(inicio, fim);
+                clicarEnter();
+                break;
+            }
+            case 3: {
+                char username[50];
+                printf("Username: ");
+                fgets(username, sizeof(username), stdin);
+                username[strcspn(username, "\n")] = 0;
+                
+                mostrarLogsPorUser(username);
+                clicarEnter();
+                break;
+            }
+            case 4: {
+                int tipo_acao;
+                printf("Tipo de ação (1-Login, 2-Logout, 3-Criação, 4-Modificação, 5-Remoção): ");
+                scanf("%d", &tipo_acao);
+                getchar();
+                
+                mostrarLogsPorTipoAcao(tipo_acao);
+                clicarEnter();
+                break;
+            }
+        }
+    } while (opcao != 0);
 }

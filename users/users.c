@@ -147,3 +147,184 @@ void registo(){
     clickEnter();
 
 }
+
+void fornecerTodosUsers() {
+    FILE *file = fopen("users.dat", "rb");
+    if (!file) {
+        printf("Erro ao abrir o arquivo de usuários!\n");
+        return;
+    }
+
+    printf("\n=== Lista de Usuários ===\n");
+    USERS user;
+    while (fread(&user, sizeof(USERS), 1, file) == 1) {
+        printf("Username: %s\n", user.username);
+        printf("Tipo: %s\n", user.tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
+        printf("Nome: %s %s\n", user.PrimeiroNome, user.UltimoNome);
+        printf("Email: %s\n", user.email);
+        printf("------------------------\n");
+    }
+    fclose(file);
+}
+
+bool adicionarUser(const char* username, const char* password, int tipo) {
+    // Verificar se o usuário já existe
+    FILE *file = fopen("users.dat", "rb");
+    if (file) {
+        USERS user;
+        while (fread(&user, sizeof(USERS), 1, file) == 1) {
+            if (strcmp(user.username, username) == 0) {
+                fclose(file);
+                return false; // Usuário já existe
+            }
+        }
+        fclose(file);
+    }
+
+    // Criar novo usuário
+    USERS novo_user;
+    strncpy(novo_user.username, username, sizeof(novo_user.username) - 1);
+    hash_to_string(password, novo_user.password);
+    novo_user.tipoUser = (tipo == 1) ? ADMINISTRADOR : TECNICO;
+    novo_user.email[0] = '\0';
+    novo_user.PrimeiroNome[0] = '\0';
+    novo_user.UltimoNome[0] = '\0';
+
+    // Adicionar ao arquivo
+    file = fopen("users.dat", "ab");
+    if (!file) return false;
+
+    bool sucesso = (fwrite(&novo_user, sizeof(USERS), 1, file) == 1);
+    fclose(file);
+
+    if (sucesso) {
+        USERS admin = getsessao();
+        char log_msg[300];
+        snprintf(log_msg, sizeof(log_msg), "Novo usuário criado: %s (Tipo: %s)", 
+                username, tipo == 1 ? "Administrador" : "Técnico");
+        logmessage(log_msg, admin);
+    }
+
+    return sucesso;
+}
+
+bool removerUser(const char* username) {
+    // Não permitir remover o último administrador
+    if (strcmp(username, "admin") == 0) {
+        printf("Não é possível remover o usuário admin!\n");
+        return false;
+    }
+
+    FILE *file = fopen("users.dat", "rb");
+    if (!file) return false;
+
+    FILE *temp = fopen("temp.dat", "wb");
+    if (!temp) {
+        fclose(file);
+        return false;
+    }
+
+    USERS user;
+    bool encontrado = false;
+    bool sucesso = true;
+
+    while (fread(&user, sizeof(USERS), 1, file) == 1) {
+        if (strcmp(user.username, username) == 0) {
+            encontrado = true;
+            continue; // Pular este usuário
+        }
+        if (fwrite(&user, sizeof(USERS), 1, temp) != 1) {
+            sucesso = false;
+            break;
+        }
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    if (sucesso && encontrado) {
+        remove("users.dat");
+        rename("temp.dat", "users.dat");
+
+        // Registrar no log
+        USERS admin = getsessao();
+        char log_msg[300];
+        snprintf(log_msg, sizeof(log_msg), "Usuário removido: %s", username);
+        logmessage(log_msg, admin);
+    } else {
+        remove("temp.dat");
+    }
+
+    return sucesso && encontrado;
+}
+
+bool modificarUser(const char* username, const char* nova_password) {
+    FILE *file = fopen("users.dat", "rb+");
+    if (!file) return false;
+
+    USERS user;
+    bool encontrado = false;
+    bool sucesso = false;
+
+    while (fread(&user, sizeof(USERS), 1, file) == 1) {
+        if (strcmp(user.username, username) == 0) {
+            encontrado = true;
+            hash_to_string(nova_password, user.password);
+            
+            // Voltar ao início do registro
+            fseek(file, -sizeof(USERS), SEEK_CUR);
+            if (fwrite(&user, sizeof(USERS), 1, file) == 1) {
+                sucesso = true;
+                
+                // Registrar no log
+                USERS admin = getsessao();
+                char log_msg[300];
+                snprintf(log_msg, sizeof(log_msg), "Senha do usuário %s modificada", username);
+                logmessage(log_msg, admin);
+            }
+            break;
+        }
+    }
+
+    fclose(file);
+    return encontrado && sucesso;
+}
+
+bool alterarRoleUser(const char* username, int novo_tipo) {
+    // Não permitir alterar o tipo do admin
+    if (strcmp(username, "admin") == 0) {
+        printf("Não é possível alterar o tipo do usuário admin!\n");
+        return false;
+    }
+
+    FILE *file = fopen("users.dat", "rb+");
+    if (!file) return false;
+
+    USERS user;
+    bool encontrado = false;
+    bool sucesso = false;
+
+    while (fread(&user, sizeof(USERS), 1, file) == 1) {
+        if (strcmp(user.username, username) == 0) {
+            encontrado = true;
+            user.tipoUser = (novo_tipo == 1) ? ADMINISTRADOR : TECNICO;
+            
+            // Voltar ao início do registro
+            fseek(file, -sizeof(USERS), SEEK_CUR);
+            if (fwrite(&user, sizeof(USERS), 1, file) == 1) {
+                sucesso = true;
+                
+                // Registrar no log
+                USERS admin = getsessao();
+                char log_msg[300];
+                snprintf(log_msg, sizeof(log_msg), "Tipo do usuário %s alterado para %s", 
+                        username, novo_tipo == 1 ? "Administrador" : "Técnico");
+                logmessage(log_msg, admin);
+            }
+            break;
+        }
+    }
+
+    fclose(file);
+    return encontrado && sucesso;
+}
