@@ -5,9 +5,10 @@
 #include "logs/logs.h"
 #include "menus/menus.h"
 #include "incidentes/incidentes.h"
+#include "utils/utils.h"
 
 typedef struct elem{
-    USERS users;
+    Incidente incidentes;
     struct Elem *proximo;
     struct Elem *anterior;
 }ELEM;
@@ -27,12 +28,19 @@ int main(){
 
     // Carregar incidentes do ficheiro
     lista_incidentes = carregarIncidentes("incidentes.bin");
+    
+    // Carregar logs do ficheiro
+    carregarLogs("logs.bin");
 
     // Iniciar o menu de login/registo
     menuLoginRegisto();
 
     // Salvar incidentes antes de sair
     guardarIncidentes(lista_incidentes, "incidentes.bin");
+    
+    // Salvar logs antes de sair
+    salvarLogs("logs.bin");
+    
     fornecerListaIncidentes(lista_incidentes);
 
     return 0;

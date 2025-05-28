@@ -5,42 +5,129 @@
 #include <windows.h>
 #include "../users/users.h"
 #include "menus.h"
+#include "../utils/utils.h"
 
 extern Incidente* lista_incidentes;
 
-void limparEcra() {
-    system("cls");
+// Função auxiliar para converter string de data para struct tm
+void converterDataStringParaTM(const char* data_str, struct tm* tm_data) {
+    int dia, mes, ano;
+    sscanf(data_str, "%d/%d/%d", &dia, &mes, &ano);
+    
+    tm_data->tm_mday = dia;
+    tm_data->tm_mon = mes - 1;  // Mês em C vai de 0 a 11
+    tm_data->tm_year = ano - 1900;  // Ano em C é contado a partir de 1900
+    tm_data->tm_hour = 0;
+    tm_data->tm_min = 0;
+    tm_data->tm_sec = 0;
+    tm_data->tm_isdst = -1;  // Deixa o sistema determinar o DST
 }
 
-void clicarEnter() {
-    printf("\nClique ENTER para continuar...");
-    getchar();
-}
-
-void menuLoginRegisto(){
+void menuIncidentesTecnico(Incidente** lista_incidentes, const char* tecnico) {
     int opcao;
     do {
-        limparEcra();
-        printf("\n=== Menu de Login/Registo ===\n");
-        printf("1. Login\n");
-        printf("2. Registo\n");
-        printf("0. Sair\n");
+        printf("\n=== Menu de Gestão de Incidentes (Técnico) ===\n");
+        printf("1. Ver incidentes atribuídos\n");
+        printf("2. Atualizar estado de incidente\n");
+        printf("3. Adicionar comentário\n");
+        printf("4. Registrar uso de ferramenta\n");
+        printf("5. Delegar incidente\n");
+        printf("6. Ver histórico de incidentes resolvidos\n");
+        printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
         getchar();
 
         switch (opcao) {
-            case 1: {
-                USERS user = login();
-                if (user.id != -1) {
-                    menuPrincipal(&user);
+            case 1:
+                fornecerIncidentesPorTecnico(*lista_incidentes, tecnico);
+                break;
+            case 2: {
+                int id, estado;
+                printf("ID do incidente: ");
+                scanf("%d", &id);
+                printf("Novo estado (0-Por tratar, 1-Em análise, 2-Resolvido): ");
+                scanf("%d", &estado);
+                
+                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
+                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
+                    atualizarEstadoIncidente(incidente, estado);
+                    printf("Estado atualizado com sucesso!\n");
+                } else {
+                    printf("Incidente não encontrado ou não está atribuído a você.\n");
                 }
                 break;
             }
-            case 2: {
-                USERS user = registo();
-                if (user.id != -1) {
-                    menuPrincipal(&user);
+            case 3: {
+                int id;
+                char comentario[500];
+                printf("ID do incidente: ");
+                scanf("%d", &id);
+                getchar();
+                printf("Comentário: ");
+                fgets(comentario, sizeof(comentario), stdin);
+                comentario[strcspn(comentario, "\n")] = 0;
+                
+                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
+                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
+                    adicionarAcaoHistorico(incidente, comentario, tecnico);
+                    printf("Comentário adicionado com sucesso!\n");
+                } else {
+                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                }
+                break;
+            }
+            case 4: {
+                int id;
+                char ferramenta[100];
+                printf("ID do incidente: ");
+                scanf("%d", &id);
+                getchar();
+                printf("Nome da ferramenta: ");
+                fgets(ferramenta, sizeof(ferramenta), stdin);
+                ferramenta[strcspn(ferramenta, "\n")] = 0;
+                
+                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
+                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
+                    adicionarFerramenta(incidente, ferramenta);
+                    printf("Ferramenta registrada com sucesso!\n");
+                } else {
+                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                }
+                break;
+            }
+            case 5: {
+                int id;
+                char novo_tecnico[50], motivo[500];
+                printf("ID do incidente: ");
+                scanf("%d", &id);
+                getchar();
+                printf("Novo técnico: ");
+                fgets(novo_tecnico, sizeof(novo_tecnico), stdin);
+                novo_tecnico[strcspn(novo_tecnico, "\n")] = 0;
+                printf("Motivo da delegação: ");
+                fgets(motivo, sizeof(motivo), stdin);
+                motivo[strcspn(motivo, "\n")] = 0;
+                
+                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
+                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
+                    designarIncidente(incidente, novo_tecnico, motivo);
+                    printf("Incidente delegado com sucesso!\n");
+                } else {
+                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                }
+                break;
+            }
+            case 6: {
+                Incidente* atual = *lista_incidentes;
+                printf("\n=== Histórico de Incidentes Resolvidos ===\n");
+                while (atual != NULL) {
+                    if (strcmp(atual->tecnico_responsavel, tecnico) == 0 && 
+                        atual->estado == RESOLVIDO) {
+                        mostrarDetalhesIncidente(atual);
+                        printf("\n");
+                    }
+                    atual = atual->proximo;
                 }
                 break;
             }
@@ -48,13 +135,48 @@ void menuLoginRegisto(){
     } while (opcao != 0);
 }
 
+
+void menuLoginRegisto() {
+    int opcao;
+    limparEcra();
+    printf("\n=== Menu de Login/Registo ===\n");
+    printf("1. Login\n");
+    printf("2. Registro\n");
+    printf("0. Sair\n");
+    printf("Escolha uma opção: ");
+    scanf("%i", &opcao);
+    getchar();
+    USERS* user = verificarSessaoAtiva();
+    if (user != NULL) {
+        printf("Já existe uma sessão ativa. Por favor, faça logout primeiro.\n");
+        menuPrincipal(user);
+        clickEnter();
+        return;
+    }
+    switch (opcao) {
+        case 1:
+            login();
+            break;
+        case 2:
+            registo();
+            break;
+        case 0:
+            return;
+        default:
+            printf("Opção inválida!\n");
+            break;
+    }
+}
+
 void menuPrincipal(USERS* user) {
-    if (user->tipo == 1) { // Admin
+    if (user->tipoUser == 1) { // Admin
         menuAdministrador(user);
     } else { // Técnico
         menuTecnico(user);
     }
 }
+
+
 
 void menuAdministrador(USERS* user) {
     int opcao;
@@ -62,7 +184,7 @@ void menuAdministrador(USERS* user) {
         limparEcra();
         printf("\n=== Menu do Administrador ===\n");
         printf("1. Gestão de Incidentes\n");
-        printf("2. Gestão de Users\n");
+        printf("2. Gestão de Usuários\n");
         printf("3. Logs do Sistema\n");
         printf("0. Logout\n");
         printf("Escolha uma opção: ");
@@ -71,7 +193,9 @@ void menuAdministrador(USERS* user) {
 
         switch (opcao) {
             case 1:
-                menuIncidentesAdmin(&lista_incidentes);
+                if (verificarIncidentesExistentes(lista_incidentes)) {
+                    menuIncidentesAdmin(&lista_incidentes);
+                }
                 break;
             case 2:
                 menuGestaoUsers();
@@ -101,26 +225,36 @@ void menuTecnico(USERS* user) {
 
         switch (opcao) {
             case 1:
-                menuIncidentesTecnico(&lista_incidentes, user->username);
+                if (verificarIncidentesExistentes(lista_incidentes)) {
+                    menuIncidentesTecnico(&lista_incidentes, user->username);
+                }
                 break;
             case 2:
-                fornecerIncidentesPorTecnico(lista_incidentes, user->username);
-                clicarEnter();
-                break;
-            case 3: {
-                Incidente* atual = lista_incidentes;
-                printf("\n=== Histórico de Incidentes Resolvidos ===\n");
-                while (atual != NULL) {
-                    if (strcmp(atual->tecnico_responsavel, user->username) == 0 && 
-                        atual->estado == RESOLVIDO) {
-                        mostrarDetalhesIncidente(atual);
-                        printf("\n");
-                    }
-                    atual = atual->proximo;
+                if (verificarIncidentesExistentes(lista_incidentes)) {
+                    fornecerIncidentesPorTecnico(lista_incidentes, user->username);
+                    clickEnter();
                 }
-                clicarEnter();
                 break;
-            }
+            case 3:
+                if (verificarIncidentesExistentes(lista_incidentes)) {
+                    Incidente* atual = lista_incidentes;
+                    printf("\n=== Histórico de Incidentes Resolvidos ===\n");
+                    bool encontrou = false;
+                    while (atual != NULL) {
+                        if (strcmp(atual->tecnico_responsavel, user->username) == 0 && 
+                            atual->estado == RESOLVIDO) {
+                            mostrarDetalhesIncidente(atual);
+                            printf("\n");
+                            encontrou = true;
+                        }
+                        atual = atual->proximo;
+                    }
+                    if (!encontrou) {
+                        printf("Não existem incidentes resolvidos por você.\n");
+                    }
+                    clickEnter();
+                }
+                break;
             case 0:
                 logout();
                 return;
@@ -134,13 +268,13 @@ void menuIncidentesAdmin(Incidente** lista_incidentes) {
         printf("\n=== Menu de Gestão de Incidentes (Admin) ===\n");
         printf("1. Adicionar novo incidente\n");
         printf("2. Remover incidente\n");
-        printf("3. Fornecer todos os incidentes\n");
+        printf("3. fornecer todos os incidentes\n");
         printf("4. Filtrar por estado\n");
         printf("5. Filtrar por severidade\n");
         printf("6. Filtrar por tipo\n");
         printf("7. Filtrar por técnico\n");
         printf("8. Filtrar por período\n");
-        printf("9. Criar relatório\n");
+        printf("9. Gerar relatório\n");
         printf("10. Ver tempo médio de resolução por técnico\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
@@ -188,7 +322,7 @@ void menuIncidentesAdmin(Incidente** lista_incidentes) {
                 break;
             case 4: {
                 int estado;
-                printf("Estado (0-Pendente, 1-Em análise, 2-Resolvido): ");
+                printf("Estado (0-Por tratar, 1-Em análise, 2-Resolvido): ");
                 scanf("%d", &estado);
                 fornecerIncidentesPorEstado(*lista_incidentes, estado);
                 break;
@@ -217,19 +351,20 @@ void menuIncidentesAdmin(Incidente** lista_incidentes) {
             }
             case 8: {
                 time_t inicio, fim;
-                struct tm tm_inicio, tm_fim;
+                struct tm tm_inicio = {0}, tm_fim = {0};
                 char data_inicio[20], data_fim[20];
                 
-                printf("Data inicial (DD/MM/AAAA): ");
+                printf("Data inicial (DD/MM/2024): ");
                 fgets(data_inicio, sizeof(data_inicio), stdin);
                 data_inicio[strcspn(data_inicio, "\n")] = 0;
                 
-                printf("Data final (DD/MM/AAAA): ");
+                printf("Data final (DD/MM/2024): ");
                 fgets(data_fim, sizeof(data_fim), stdin);
                 data_fim[strcspn(data_fim, "\n")] = 0;
                 
-                strptime(data_inicio, "%d/%m/%Y", &tm_inicio);
-                strptime(data_fim, "%d/%m/%Y", &tm_fim);
+                // Converte as strings de data para struct tm
+                converterDataStringParaTM(data_inicio, &tm_inicio);
+                converterDataStringParaTM(data_fim, &tm_fim);
                 
                 inicio = mktime(&tm_inicio);
                 fim = mktime(&tm_fim);
@@ -240,29 +375,30 @@ void menuIncidentesAdmin(Incidente** lista_incidentes) {
             case 9: {
                 char arquivo[100];
                 time_t inicio, fim;
-                struct tm tm_inicio, tm_fim;
+                struct tm tm_inicio = {0}, tm_fim = {0};
                 char data_inicio[20], data_fim[20];
                 
                 printf("Nome do arquivo de relatório: ");
                 fgets(arquivo, sizeof(arquivo), stdin);
                 arquivo[strcspn(arquivo, "\n")] = 0;
                 
-                printf("Data inicial (DD/MM/AAAA): ");
+                printf("Data inicial (DD/MM/2024): ");
                 fgets(data_inicio, sizeof(data_inicio), stdin);
                 data_inicio[strcspn(data_inicio, "\n")] = 0;
                 
-                printf("Data final (DD/MM/AAAA): ");
+                printf("Data final (DD/MM/2024): ");
                 fgets(data_fim, sizeof(data_fim), stdin);
                 data_fim[strcspn(data_fim, "\n")] = 0;
                 
-                strptime(data_inicio, "%d/%m/%Y", &tm_inicio);
-                strptime(data_fim, "%d/%m/%Y", &tm_fim);
+                // Converte as strings de data para struct tm
+                converterDataStringParaTM(data_inicio, &tm_inicio);
+                converterDataStringParaTM(data_fim, &tm_fim);
                 
                 inicio = mktime(&tm_inicio);
                 fim = mktime(&tm_fim);
                 
                 criarRelatorio(*lista_incidentes, arquivo, inicio, fim);
-                printf("Relatório criado com sucesso!\n");
+                printf("Relatório gerado com sucesso!\n");
                 break;
             }
             case 10: {
@@ -277,117 +413,6 @@ void menuIncidentesAdmin(Incidente** lista_incidentes) {
     } while (opcao != 0);
 }
 
-void menuIncidentesTecnico(Incidente** lista_incidentes, const char* tecnico) {
-    int opcao;
-    do {
-        printf("\n=== Menu de Gestão de Incidentes (Técnico) ===\n");
-        printf("1. Ver incidentes atribuídos\n");
-        printf("2. Atualizar estado de incidente\n");
-        printf("3. Adicionar comentário\n");
-        printf("4. Registar uso de ferramenta\n");
-        printf("5. Designar incidente\n");
-        printf("6. Ver histórico de incidentes resolvidos\n");
-        printf("0. Voltar\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        getchar();
-
-        switch (opcao) {
-            case 1:
-                FornecerIncidentesPorTecnico(*lista_incidentes, tecnico);
-                break;
-            case 2: {
-                int id, estado;
-                printf("ID do incidente: ");
-                scanf("%d", &id);
-                printf("Novo estado (0-Pendente, 1-Em análise, 2-Resolvido): ");
-                scanf("%d", &estado);
-                
-                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
-                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
-                    atualizarEstadoIncidente(incidente, estado);
-                    printf("Estado atualizado com sucesso!\n");
-                } else {
-                    printf("Incidente não encontrado ou não está atribuído a este técnico.\n");
-                }
-                break;
-            }
-            case 3: {
-                int id;
-                char comentario[500];
-                printf("ID do incidente: ");
-                scanf("%d", &id);
-                getchar();
-                printf("Comentário: ");
-                fgets(comentario, sizeof(comentario), stdin);
-                comentario[strcspn(comentario, "\n")] = 0;
-                
-                Incidente* incidente = buscarIncidente(*lista_incidentes, id);
-                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
-                    adicionarAcaoHistorico(incidente, comentario, tecnico);
-                    printf("Comentário adicionado com sucesso!\n");
-                } else {
-                    printf("Incidente não encontrado ou não está atribuído a este técnico.\n");
-                }
-                break;
-            }
-            case 4: {
-                int id;
-                char ferramenta[100];
-                printf("ID do incidente: ");
-                scanf("%d", &id);
-                getchar();
-                printf("Nome da ferramenta: ");
-                fgets(ferramenta, sizeof(ferramenta), stdin);
-                ferramenta[strcspn(ferramenta, "\n")] = 0;
-                
-                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
-                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
-                    adicionarFerramenta(incidente, ferramenta);
-                    printf("Ferramenta registada com sucesso!\n");
-                } else {
-                    printf("Incidente não encontrado ou não está atribuído a este técnico.\n");
-                }
-                break;
-            }
-            case 5: {
-                int id;
-                char novo_tecnico[50], motivo[500];
-                printf("ID do incidente: ");
-                scanf("%d", &id);
-                getchar();
-                printf("Novo técnico: ");
-                fgets(novo_tecnico, sizeof(novo_tecnico), stdin);
-                novo_tecnico[strcspn(novo_tecnico, "\n")] = 0;
-                printf("Motivo da designação: ");
-                fgets(motivo, sizeof(motivo), stdin);
-                motivo[strcspn(motivo, "\n")] = 0;
-                
-                Incidente* incidente = procurarIncidente(*lista_incidentes, id);
-                if (incidente && strcmp(incidente->tecnico_responsavel, tecnico) == 0) {
-                    designarIncidente(incidente, novo_tecnico, motivo);
-                    printf("Incidente designado com sucesso!\n");
-                } else {
-                    printf("Incidente não encontrado ou não está atribuído a este técnico.\n");
-                }
-                break;
-            }
-            case 6: {
-                Incidente* atual = *lista_incidentes;
-                printf("\n=== Histórico de Incidentes Resolvidos ===\n");
-                while (atual != NULL) {
-                    if (strcmp(atual->tecnico_responsavel, tecnico) == 0 && 
-                        atual->estado == RESOLVIDO) {
-                        mostrarDetalhesIncidente(atual);
-                        printf("\n");
-                    }
-                    atual = atual->proximo;
-                }
-                break;
-            }
-        }
-    } while (opcao != 0);
-}
 
 void fornecerIncidentes(Incidente* lista) {
     printf("\n=== Lista de Incidentes ===\n");
@@ -513,167 +538,15 @@ void calcularTempoMedioResolucao(Incidente* lista, const char* tecnico) {
 }
 
 void menuGestaoUsers() {
-    int opcao;
-    do {
-        limparEcra();
-        printf("\n=== Menu de Gestão de Users ===\n");
-        printf("1. Listar todos os users\n");
-        printf("2. Adicionar novo user\n");
-        printf("3. Remover user\n");
-        printf("4. Modificar detalhes do user\n");
-        printf("5. Alterar role do user\n");
-        printf("0. Voltar\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        getchar();
-
-        switch (opcao) {
-            case 1: {
-                fornecerTodosUsers();
-                clicarEnter();
-                break;
-            }
-            case 2: {
-                char username[50], password[50];
-                int tipo;
-                printf("Username: ");
-                fgets(username, sizeof(username), stdin);
-                username[strcspn(username, "\n")] = 0;
-                
-                printf("Password: ");
-                fgets(password, sizeof(password), stdin);
-                password[strcspn(password, "\n")] = 0;
-                
-                printf("Tipo (1-Admin, 2-Técnico): ");
-                scanf("%d", &tipo);
-                getchar();
-                
-                if (adicionarUser(username, password, tipo)) {
-                    printf("User adicionado com sucesso!\n");
-                } else {
-                    printf("Erro ao adicionar user!\n");
-                }
-                clicarEnter();
-                break;
-            }
-            case 3: {
-                char username[50];
-                printf("Username do user a remover: ");
-                fgets(username, sizeof(username), stdin);
-                username[strcspn(username, "\n")] = 0;
-                
-                if (removerUser(username)) {
-                    printf("User removido com sucesso!\n");
-                } else {
-                    printf("Erro ao remover user!\n");
-                }
-                clicarEnter();
-                break;
-            }
-            case 4: {
-                char username[50], nova_password[50];
-                printf("Username do user a modificar: ");
-                fgets(username, sizeof(username), stdin);
-                username[strcspn(username, "\n")] = 0;
-                
-                printf("Nova password: ");
-                fgets(nova_password, sizeof(nova_password), stdin);
-                nova_password[strcspn(nova_password, "\n")] = 0;
-                
-                if (modificarUser(username, nova_password)) {
-                    printf("User modificado com sucesso!\n");
-                } else {
-                    printf("Erro ao modificar user!\n");
-                }
-                clicarEnter();
-                break;
-            }
-            case 5: {
-                char username[50];
-                int novo_tipo;
-                printf("Username do user: ");
-                fgets(username, sizeof(username), stdin);
-                username[strcspn(username, "\n")] = 0;
-                
-                printf("Novo tipo (1-Admin, 2-Técnico): ");
-                scanf("%d", &novo_tipo);
-                getchar();
-                
-                if (alterarRoleUser(username, novo_tipo)) {
-                    printf("Role do user alterada com sucesso!\n");
-                } else {
-                    printf("Erro ao alterar role do user!\n");
-                }
-                clicarEnter();
-                break;
-            }
-        }
-    } while (opcao != 0);
+    printf("\n=== Menu de Gestão de Usuários ===\n");
+    printf("Funcionalidade em desenvolvimento...\n");
+    clickEnter();
 }
 
 void menuLogs() {
-    int opcao;
-    do {
-        limparEcra();
-        printf("\n=== Menu de Logs do Sistema ===\n");
-        printf("1. Ver todos os logs\n");
-        printf("2. Filtrar logs por data\n");
-        printf("3. Filtrar logs por user\n");
-        printf("4. Filtrar logs por tipo de ação\n");
-        printf("0. Voltar\n");
-        printf("Escolha uma opção: ");
-        scanf("%d", &opcao);
-        getchar();
-
-        switch (opcao) {
-            case 1: {
-                mostrarTodosLogs();
-                clicarEnter();
-                break;
-            }
-            case 2: {
-                char data_inicio[20], data_fim[20];
-                struct tm tm_inicio, tm_fim;
-                time_t inicio, fim;
-                
-                printf("Data inicial (DD/MM/AAAA): ");
-                fgets(data_inicio, sizeof(data_inicio), stdin);
-                data_inicio[strcspn(data_inicio, "\n")] = 0;
-                
-                printf("Data final (DD/MM/AAAA): ");
-                fgets(data_fim, sizeof(data_fim), stdin);
-                data_fim[strcspn(data_fim, "\n")] = 0;
-                
-                strptime(data_inicio, "%d/%m/%Y", &tm_inicio);
-                strptime(data_fim, "%d/%m/%Y", &tm_fim);
-                
-                inicio = mktime(&tm_inicio);
-                fim = mktime(&tm_fim);
-                
-                mostrarLogsPorPeriodo(inicio, fim);
-                clicarEnter();
-                break;
-            }
-            case 3: {
-                char username[50];
-                printf("Username: ");
-                fgets(username, sizeof(username), stdin);
-                username[strcspn(username, "\n")] = 0;
-                
-                mostrarLogsPorUser(username);
-                clicarEnter();
-                break;
-            }
-            case 4: {
-                int tipo_acao;
-                printf("Tipo de ação (1-Login, 2-Logout, 3-Criação, 4-Modificação, 5-Remoção): ");
-                scanf("%d", &tipo_acao);
-                getchar();
-                
-                mostrarLogsPorTipoAcao(tipo_acao);
-                clicarEnter();
-                break;
-            }
-        }
-    } while (opcao != 0);
+    printf("\n=== Menu de Logs ===\n");
+    printf("Funcionalidade em desenvolvimento...\n");
+    clickEnter();
 }
+
+

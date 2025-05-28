@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include "incidentes.h"
+#include "../utils/utils.h"
 
 Incidente* criarIncidente(int id, TipoIncidente tipo, const char* descricao, Severidade severidade) {
     Incidente* novo = (Incidente*)malloc(sizeof(Incidente));
@@ -238,4 +239,52 @@ void fornecerListaIncidentes(Incidente* lista) {
         free(temp->ferramentas);
         free(temp);
     }
+}
+
+bool verificarIncidentesExistentes(Incidente* lista) {
+    // Se a lista já estiver carregada, retorna true
+    if (lista != NULL) {
+        return true;
+    }
+
+    // Se não houver na lista, tenta carregar do arquivo
+    FILE *f = fopen("incidentes.bin", "rb");
+    if (!f) {
+        printf("\nNão existem incidentes registrados no sistema.\n");
+        clickEnter();
+        return false;
+    }
+    fclose(f);
+    return true;
+}
+
+void limparListaIncidentes(Incidente** lista) {
+    // Primeiro guarda os incidentes no arquivo
+    if (*lista != NULL) {
+        guardarIncidentes(*lista, "incidentes.bin");
+    }
+
+    // Depois limpa a memória
+    Incidente* atual = *lista;
+    while (atual != NULL) {
+        Incidente* proximo = atual->proximo;
+        
+        // Libera o histórico
+        if (atual->historico != NULL) {
+            free(atual->historico);
+        }
+        
+        // Libera as ferramentas
+        if (atual->ferramentas != NULL) {
+            free(atual->ferramentas);
+        }
+        
+        // Libera o incidente
+        free(atual);
+        
+        atual = proximo;
+    }
+    
+    // Reseta o ponteiro da lista
+    *lista = NULL;
 }

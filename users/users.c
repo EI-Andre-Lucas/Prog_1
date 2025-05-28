@@ -5,56 +5,22 @@
 #include "users.h"
 #include "../menus/menus.h"
 #include "../logs/logs.h"
+#include "../utils/utils.h"
 
 #define HASH_STR_SIZE 21
+#define MAX_USERS 100
+#define USERS_FILE "users.dat"
 
-void remove_newline(char *str) {
-    str[strcspn(str, "\n")] = '\0';
-}
+static USERS users[MAX_USERS];
+static int num_users = 0;
 
-//STACKOVERFLOW https://stackoverflow.com/questions/7666509/hash-function-for-string
-unsigned long hash_string(const char *str) {
-    unsigned long hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c; // hash * 33 + c
-
-    return hash;
-}
-
-USERS getsessao(){
-    USERS user;
-    FILE *fp = fopen("sessao.dat","rb");
-    if(fp == NULL){
-        printf("\nErro ao abrir o ficheiro");
-        user.username[0] = '\0';  // Retorna um user vazio em caso de erro
-        return user;
+// Função para carregar o número de usuários do arquivo
+void load_user_count() {
+    FILE *file = fopen(USERS_FILE, "rb");
+    if (file != NULL) {
+        fread(&num_users, sizeof(int), 1, file);
+        fclose(file);
     }
-    fread(&user, sizeof(USERS), 1, fp);
-    fclose(fp);
-    return user;
-}
-
-// Converte o hash numérico para string (para guardar)
-void hash_to_string(const char *password, char *output) {
-    unsigned long hash = hash_string(password);
-    snprintf(output, HASH_STR_SIZE, "%lu", hash);
-}
-
-void FirstUserCreator(){
-    USERS user;
-    char TempPassword[100] = {"admin"};
-    strcpy(user.username, "admin");
-    hash_to_string(TempPassword, user.password);
-    user.tipoUser = 0;
-    FILE *fp = fopen("../users/users.dat","ab+");
-    if(fp==NULL){
-        printf("\nErro ao abrir o ficheiro, o programa vai ser encerrado");
-        return;
-    }
-    fwrite(&user, sizeof(USERS), 1, fp);
-    fclose(fp);
 }
 
 bool guardarSessao(USERS *user) {
@@ -65,266 +31,154 @@ bool guardarSessao(USERS *user) {
     return true;
 }
 
-void logout() {
-    remove("sessao.dat");
+// Função para salvar o número de usuários no arquivo
+void save_user_count() {
+    FILE *file = fopen(USERS_FILE, "wb");
+    if (file != NULL) {
+        fwrite(&num_users, sizeof(int), 1, file);
+        fclose(file);
+    }
 }
 
-void login(){
-    FILE *fp = fopen("users.dat","rb");
+void remove_newline(char *str) {
+    str[strcspn(str, "\n")] = '\0';
+}
 
-    if(fp == NULL){
-        printf("Erro ao abrir o ficheiro");
-        return;
-    }
+// Função de hash para encriptar passwords
+unsigned long hash_string(const char *str) {
+    unsigned long hash = 5381;
+    int c;
 
-    USERS user;
-    char tempP[100], username[100];
-    char hashedPassword[HASH_STR_SIZE];
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
 
-    printf("\nUsername: ");
-    fgets(username, 100, stdin);
-    remove_newline(username);
+    return hash;
+}
 
-    printf("\nPassword: ");
-    fgets(tempP, 100, stdin);
-    remove_newline(tempP);
+// Converte o hash numérico para string (para guardar)
+void hash_to_string(const char *password, char *output) {
+    unsigned long hash = hash_string(password);
+    snprintf(output, HASH_STR_SIZE, "%lu", hash);
+}
+
+void FirstUserCreator() {
+    load_user_count(); // Carrega o número de usuários do arquivo
     
-    hash_to_string(tempP, hashedPassword);
+    if (num_users == 0) {
+        USERS admin;
+        admin.id = 1;
+        strcpy(admin.username, "admin");
+        strcpy(admin.primeiroNome, "Administrador");
+        strcpy(admin.ultimoNome, "Sistema");
+        hash_to_string("admin", admin.password);
+        admin.tipoUser = ADMINISTRADOR;
+        users[num_users++] = admin;
+        save_user_count(); // Salva o número de usuários após criar o admin
+    }
+}
 
-    while(fread(&user, sizeof(USERS), 1, fp) == 1){
-        if(strcmp(username, user.username) == 0){
-            if(strcmp(hashedPassword, user.password) == 0){
-                guardarSessao(&user);
-                printf("\nLogin bem sucedido.");
+void login() {
+    char username[50], password[50];
+    char hashed_password[HASH_STR_SIZE];
+    USERS user;
+
+    printf("\n=== Login ===\n");
+    printf("Username: ");
+    fgets(username, sizeof(username), stdin);
+    username[strcspn(username, "\n")] = 0;
+
+    printf("Password: ");
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = 0;
+
+    // Encripta a password inserida para comparação
+    hash_to_string(password, hashed_password);
+
+    for (int i = 0; i < num_users; i++) {
+        if (strcmp(users[i].username, username) == 0 && 
+            strcmp(users[i].password, hashed_password) == 0) {
+            user = users[i];
+            if (guardarSessao(&user)) {
+                menuPrincipal(&user);
+            } else {
+                printf("Erro ao guardar sessão!\n");
                 clickEnter();
-            }else{
-                clrscr();
-                printf("Palavra passe ou username errados, tente novamente mais tarde.");
-                logmessage("Tentativa falha de login",user);
             }
+            return;
         }
     }
-    
-    fclose(fp);
+
+    printf("Login falhou! Username ou password incorretos.\n");
     clickEnter();
-    menu_login_reg(0);
 }
 
-void registo(){
-    USERS user;
-    char TempPassword[100];
-    printf("| Registar |\n");
-    printf("Se por um acaso se tenha enganado e entrou neste menu por engano escreva \";\" no username e voltará ao menu anterior\n");
-    printf("\nUsername: ");
-    fgets(user.username, 100, stdin);
-    remove_newline(user.username);
-    if(strcmp(user.username,";")==0){
-        menu_login_reg();
-    }
-    printf("\nPrimeiro Nome: ");
-    fgets(user.PrimeiroNome, 100, stdin);
-    remove_newline(user.PrimeiroNome);
-    printf("\nÚltimo Nome: ");
-    fgets(user.UltimoNome, 100, stdin);
-    remove_newline(user.UltimoNome);
-    printf("\nEmail: ");
-    fgets(user.email, 100, stdin);
-    remove_newline(user.email);
-    printf("\nPassword: ");
-    fgets(TempPassword, 100, stdin);
-    remove_newline(TempPassword);
-    hash_to_string(TempPassword, user.password);
-    user.tipoUser = 1;
-    FILE *fp = fopen("../users/users.dat","ab+");
-    if(fp==NULL){
-        printf("\nErro ao abrir o ficheiro, o programa vai ser encerrado");
-        return;
-    }
-    fwrite(&user, sizeof(USERS), 1, fp);
-    fclose(fp);
-
-    printf("\nFoste registado!");
-    clickEnter();
-
-}
-
-void fornecerTodosUsers() {
-    FILE *file = fopen("users.dat", "rb");
-    if (!file) {
-        printf("Erro ao abrir o arquivo de usuários!\n");
+void registo() {
+    if (num_users >= MAX_USERS) {
+        printf("Número máximo de utilizadores atingido!\n");
+        clickEnter();
         return;
     }
 
-    printf("\n=== Lista de Usuários ===\n");
-    USERS user;
-    while (fread(&user, sizeof(USERS), 1, file) == 1) {
-        printf("Username: %s\n", user.username);
-        printf("Tipo: %s\n", user.tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
-        printf("Nome: %s %s\n", user.PrimeiroNome, user.UltimoNome);
-        printf("Email: %s\n", user.email);
-        printf("------------------------\n");
-    }
-    fclose(file);
-}
-
-bool adicionarUser(const char* username, const char* password, int tipo) {
-    // Verificar se o usuário já existe
-    FILE *file = fopen("users.dat", "rb");
-    if (file) {
-        USERS user;
-        while (fread(&user, sizeof(USERS), 1, file) == 1) {
-            if (strcmp(user.username, username) == 0) {
-                fclose(file);
-                return false; // Usuário já existe
-            }
-        }
-        fclose(file);
-    }
-
-    // Criar novo usuário
     USERS novo_user;
-    strncpy(novo_user.username, username, sizeof(novo_user.username) - 1);
+    novo_user.id = num_users + 1;
+
+    printf("\n=== Registo ===\n");
+    
+    printf("Primeiro Nome: ");
+    fgets(novo_user.primeiroNome, sizeof(novo_user.primeiroNome), stdin);
+    novo_user.primeiroNome[strcspn(novo_user.primeiroNome, "\n")] = 0;
+
+    printf("Último Nome: ");
+    fgets(novo_user.ultimoNome, sizeof(novo_user.ultimoNome), stdin);
+    novo_user.ultimoNome[strcspn(novo_user.ultimoNome, "\n")] = 0;
+
+    printf("Username: ");
+    fgets(novo_user.username, sizeof(novo_user.username), stdin);
+    novo_user.username[strcspn(novo_user.username, "\n")] = 0;
+
+    // Verifica se o username já existe
+    for (int i = 0; i < num_users; i++) {
+        if (strcmp(users[i].username, novo_user.username) == 0) {
+            printf("Username já existe! Por favor escolha outro.\n");
+            clickEnter();
+            return;
+        }
+    }
+
+    printf("Password: ");
+    char password[50];
+    fgets(password, sizeof(password), stdin);
+    password[strcspn(password, "\n")] = 0;
+
+    // Encripta a password antes de guardar
     hash_to_string(password, novo_user.password);
-    novo_user.tipoUser = (tipo == 1) ? ADMINISTRADOR : TECNICO;
-    novo_user.email[0] = '\0';
-    novo_user.PrimeiroNome[0] = '\0';
-    novo_user.UltimoNome[0] = '\0';
 
-    // Adicionar ao arquivo
-    file = fopen("users.dat", "ab");
-    if (!file) return false;
+    novo_user.tipoUser = TECNICO; // Por padrão, novos usuários são técnicos
 
-    bool sucesso = (fwrite(&novo_user, sizeof(USERS), 1, file) == 1);
-    fclose(file);
-
-    if (sucesso) {
-        USERS admin = getsessao();
-        char log_msg[300];
-        snprintf(log_msg, sizeof(log_msg), "Novo usuário criado: %s (Tipo: %s)", 
-                username, tipo == 1 ? "Administrador" : "Técnico");
-        logmessage(log_msg, admin);
-    }
-
-    return sucesso;
+    users[num_users++] = novo_user;
+    save_user_count(); // Salva o novo número de usuários
+    printf("Registo realizado com sucesso!\n");
+    clickEnter();
 }
 
-bool removerUser(const char* username) {
-    // Não permitir remover o último administrador
-    if (strcmp(username, "admin") == 0) {
-        printf("Não é possível remover o usuário admin!\n");
-        return false;
-    }
-
-    FILE *file = fopen("users.dat", "rb");
-    if (!file) return false;
-
-    FILE *temp = fopen("temp.dat", "wb");
-    if (!temp) {
-        fclose(file);
-        return false;
-    }
-
-    USERS user;
-    bool encontrado = false;
-    bool sucesso = true;
-
-    while (fread(&user, sizeof(USERS), 1, file) == 1) {
-        if (strcmp(user.username, username) == 0) {
-            encontrado = true;
-            continue; // Pular este usuário
-        }
-        if (fwrite(&user, sizeof(USERS), 1, temp) != 1) {
-            sucesso = false;
-            break;
-        }
-    }
-
-    fclose(file);
-    fclose(temp);
-
-    if (sucesso && encontrado) {
-        remove("users.dat");
-        rename("temp.dat", "users.dat");
-
-        // Registrar no log
-        USERS admin = getsessao();
-        char log_msg[300];
-        snprintf(log_msg, sizeof(log_msg), "Usuário removido: %s", username);
-        logmessage(log_msg, admin);
+void logout() {
+    if (remove("sessao.dat") == 0) {
+        printf("\nLogout realizado com sucesso!\n");
     } else {
-        remove("temp.dat");
+        printf("\nErro ao realizar logout!\n");
     }
-
-    return sucesso && encontrado;
+    clickEnter();
 }
+USERS* verificarSessaoAtiva() {
+    FILE *f = fopen("sessao.dat", "rb");
+    if (!f) return NULL;
 
-bool modificarUser(const char* username, const char* nova_password) {
-    FILE *file = fopen("users.dat", "rb+");
-    if (!file) return false;
-
-    USERS user;
-    bool encontrado = false;
-    bool sucesso = false;
-
-    while (fread(&user, sizeof(USERS), 1, file) == 1) {
-        if (strcmp(user.username, username) == 0) {
-            encontrado = true;
-            hash_to_string(nova_password, user.password);
-            
-            // Voltar ao início do registro
-            fseek(file, -sizeof(USERS), SEEK_CUR);
-            if (fwrite(&user, sizeof(USERS), 1, file) == 1) {
-                sucesso = true;
-                
-                // Registrar no log
-                USERS admin = getsessao();
-                char log_msg[300];
-                snprintf(log_msg, sizeof(log_msg), "Senha do usuário %s modificada", username);
-                logmessage(log_msg, admin);
-            }
-            break;
-        }
+    static USERS user;
+    if (fread(&user, sizeof(USERS), 1, f) != 1) {
+        fclose(f);
+        return NULL;
     }
 
-    fclose(file);
-    return encontrado && sucesso;
-}
-
-bool alterarRoleUser(const char* username, int novo_tipo) {
-    // Não permitir alterar o tipo do admin
-    if (strcmp(username, "admin") == 0) {
-        printf("Não é possível alterar o tipo do usuário admin!\n");
-        return false;
-    }
-
-    FILE *file = fopen("users.dat", "rb+");
-    if (!file) return false;
-
-    USERS user;
-    bool encontrado = false;
-    bool sucesso = false;
-
-    while (fread(&user, sizeof(USERS), 1, file) == 1) {
-        if (strcmp(user.username, username) == 0) {
-            encontrado = true;
-            user.tipoUser = (novo_tipo == 1) ? ADMINISTRADOR : TECNICO;
-            
-            // Voltar ao início do registro
-            fseek(file, -sizeof(USERS), SEEK_CUR);
-            if (fwrite(&user, sizeof(USERS), 1, file) == 1) {
-                sucesso = true;
-                
-                // Registrar no log
-                USERS admin = getsessao();
-                char log_msg[300];
-                snprintf(log_msg, sizeof(log_msg), "Tipo do usuário %s alterado para %s", 
-                        username, novo_tipo == 1 ? "Administrador" : "Técnico");
-                logmessage(log_msg, admin);
-            }
-            break;
-        }
-    }
-
-    fclose(file);
-    return encontrado && sucesso;
+    fclose(f);
+    return &user;
 }

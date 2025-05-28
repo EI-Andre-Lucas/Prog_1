@@ -1,21 +1,24 @@
 #ifndef LOGS_H
 #define LOGS_H
-typedef struct logs
-{
-    int id;
-    char mensagem[300];
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "../utils/utils.h"
+
+typedef struct {
     char username[50];
-    char data[100];
-}LOGS;
+    char acao[100];
+    time_t data_hora;
+} Log;
 
-void logmessage(char mensagem[300], USERS user);
-
-int getLastLogNumber();
-
-void mostrarTodosLogs();
+void registrarLog(const char* username, const char* acao);
+void mostrarLogs();
+void mostrarLogsPorUsuario(const char* username);
 void mostrarLogsPorPeriodo(time_t inicio, time_t fim);
-void mostrarLogsPorUser(const char* username);
-void mostrarLogsPorTipoAcao(int tipo_acao);
+void salvarLogs(const char* arquivo);
+void carregarLogs(const char* arquivo);
 
 #endif
 

@@ -2,6 +2,8 @@
 #define INCIDENTES_H
 
 #include <time.h>
+#include <stdbool.h>
+#include "../utils/utils.h"
 
 // Enumerações
 typedef enum {
@@ -56,10 +58,11 @@ typedef struct Incidente {
 } Incidente;
 
 // Funções para gestão de incidentes
+bool verificarIncidentesExistentes(Incidente* lista);
 Incidente* criarIncidente(int id, TipoIncidente tipo, const char* descricao, Severidade severidade);
 void adicionarIncidente(Incidente** lista, Incidente* novo);
 void removerIncidente(Incidente** lista, int id);
-Incidente* buscarIncidente(Incidente* lista, int id);
+Incidente* procurarIncidente(Incidente* lista, int id);
 void atualizarEstadoIncidente(Incidente* incidente, EstadoIncidente novo_estado);
 void adicionarAcaoHistorico(Incidente* incidente, const char* descricao, const char* tecnico);
 void adicionarFerramenta(Incidente* incidente, const char* nome);
@@ -68,5 +71,6 @@ void guardarIncidentes(Incidente* lista, const char* ficheiro);
 Incidente* carregarIncidentes(const char* ficheiro);
 void criarRelatorio(Incidente* lista, const char* ficheiro, time_t inicio, time_t fim);
 void fornecerListaIncidentes(Incidente* lista);
+void limparListaIncidentes(Incidente** lista);
 
 #endif // INCIDENTES_H

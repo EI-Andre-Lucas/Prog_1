@@ -1,11 +1,15 @@
 #ifndef MENUS_H
 #define MENUS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include "../users/users.h"
 #include "../incidentes/incidentes.h"
+#include "../utils/utils.h"
 
 // Funções de interface
-void limparEcra();
-void clicarEnter();
 void menuLoginRegisto();
 void menuPrincipal(USERS* user);
 void menuAdministrador(USERS* user);
@@ -26,5 +30,8 @@ void mostrarDetalhesIncidente(Incidente* incidente);
 void mostrarHistoricoIncidente(Incidente* incidente);
 void mostrarFerramentasUtilizadas(Incidente* incidente);
 void calcularTempoMedioResolucao(Incidente* lista, const char* tecnico);
+
+void menuGestaoUsers();
+void menuLogs();
 
 #endif 
