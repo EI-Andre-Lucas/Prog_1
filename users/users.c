@@ -9,7 +9,7 @@
 
 #define HASH_STR_SIZE 21
 #define MAX_USERS 100
-#define USERS_FILE "users.dat"
+#define USERS_FILE "users/users.dat"
 
 static USERS users[MAX_USERS];
 static int num_users = 0;
@@ -24,7 +24,7 @@ void load_user_count() {
 }
 
 bool guardarSessao(USERS *user) {
-    FILE *f = fopen("sessao.dat", "wb");
+    FILE *f = fopen("users/sessao.dat", "wb");
     if (!f) return false;
     fwrite(user, sizeof(USERS), 1, f);
     fclose(f);
@@ -162,7 +162,7 @@ void registo() {
 }
 
 void logout() {
-    if (remove("sessao.dat") == 0) {
+    if (remove("users/sessao.dat") == 0) {
         printf("\nLogout realizado com sucesso!\n");
     } else {
         printf("\nErro ao realizar logout!\n");
@@ -170,7 +170,7 @@ void logout() {
     clickEnter();
 }
 USERS* verificarSessaoAtiva() {
-    FILE *f = fopen("sessao.dat", "rb");
+    FILE *f = fopen("users/sessao.dat", "rb");
     if (!f) return NULL;
 
     static USERS user;
