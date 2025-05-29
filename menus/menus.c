@@ -156,9 +156,11 @@ void menuLoginRegisto() {
     switch (opcao) {
         case 1:
             login();
+            menuPrincipal(user);
             break;
         case 2:
             registo();
+            menuLoginRegisto();
             break;
         case 0:
             return;
