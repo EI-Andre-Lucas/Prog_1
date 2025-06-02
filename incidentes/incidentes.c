@@ -406,3 +406,105 @@ void limparListaIncidentes(ELEM** lista) {
     // Reseta o ponteiro da lista
     *lista = NULL;
 }
+
+// Função para trocar dois incidentes na lista
+void trocarIncidentes(ELEM* a, ELEM* b) {
+    Incidente temp = a->incidente;
+    a->incidente = b->incidente;
+    b->incidente = temp;
+}
+
+// Função para ordenar incidentes por ID
+void ordenarPorID(ELEM* inicio) {
+    ELEM* i, *j;
+    for (i = inicio; i != NULL; i = i->proximo) {
+        for (j = i->proximo; j != NULL; j = j->proximo) {
+            if (i->incidente.id > j->incidente.id) {
+                trocarIncidentes(i, j);
+            }
+        }
+    }
+}
+
+// Função para ordenar incidentes por data de criação
+void ordenarPorDataCriacao(ELEM* inicio) {
+    ELEM* i, *j;
+    for (i = inicio; i != NULL; i = i->proximo) {
+        for (j = i->proximo; j != NULL; j = j->proximo) {
+            if (i->incidente.data_hora > j->incidente.data_hora) {
+                trocarIncidentes(i, j);
+            }
+        }
+    }
+}
+
+// Função para ordenar incidentes por estado
+void ordenarPorEstado(ELEM* inicio) {
+    ELEM* i, *j;
+    for (i = inicio; i != NULL; i = i->proximo) {
+        for (j = i->proximo; j != NULL; j = j->proximo) {
+            if (i->incidente.estado > j->incidente.estado) {
+                trocarIncidentes(i, j);
+            }
+        }
+    }
+}
+
+// Função para ordenar incidentes por técnico
+void ordenarPorTecnico(ELEM* inicio) {
+    ELEM* i, *j;
+    for (i = inicio; i != NULL; i = i->proximo) {
+        for (j = i->proximo; j != NULL; j = j->proximo) {
+            if (strcmp(i->incidente.tecnico_responsavel, j->incidente.tecnico_responsavel) > 0) {
+                trocarIncidentes(i, j);
+            }
+        }
+    }
+}
+
+// Função para ordenar incidentes
+void ordenarIncidentes(ELEM** lista) {
+    if (*lista == NULL) {
+        printf("\nNão existem incidentes para ordenar.\n");
+        return;
+    }
+
+    int opcao;
+    printf("\n=== Ordenar Incidentes ===\n");
+    printf("1. Ordenar por ID\n");
+    printf("2. Ordenar por Data de Criação\n");
+    printf("3. Ordenar por Estado\n");
+    printf("4. Ordenar por Técnico\n");
+    printf("0. Voltar\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &opcao);
+    limparBuffer();
+
+    switch (opcao) {
+        case 1:
+            ordenarPorID(*lista);
+            printf("\nIncidentes ordenados por ID.\n");
+            break;
+        case 2:
+            ordenarPorDataCriacao(*lista);
+            printf("\nIncidentes ordenados por Data de Criação.\n");
+            break;
+        case 3:
+            ordenarPorEstado(*lista);
+            printf("\nIncidentes ordenados por Estado.\n");
+            break;
+        case 4:
+            ordenarPorTecnico(*lista);
+            printf("\nIncidentes ordenados por Técnico.\n");
+            break;
+        case 0:
+            return;
+        default:
+            printf("\nOpção inválida!\n");
+            return;
+    }
+
+    // Guardar a lista ordenada no ficheiro
+    guardarIncidentes(*lista, "incidentes.bin");
+    printf("\nLista de incidentes atualizada e guardada.\n");
+}

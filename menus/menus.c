@@ -35,6 +35,7 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
         printf("4. Registrar uso de ferramenta\n");
         printf("5. Delegar incidente\n");
         printf("6. Ver histórico de incidentes resolvidos\n");
+        printf("7. Ordenar incidentes\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
@@ -133,6 +134,15 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                 }
                 break;
             }
+            case 7:
+                ordenarIncidentes(lista_incidentes);
+                clickEnter();
+                break;
+            case 0:
+                break;
+            default:
+                printf("\nOpção inválida!\n");
+                clickEnter();
         }
     } while (opcao != 0);
 }
@@ -275,6 +285,7 @@ void menuIncidentesAdmin() {
         printf("6. Adicionar ferramenta\n");
         printf("7. Adicionar comentário\n");
         printf("8. Gerar relatório\n");
+        printf("9. Ordenar incidentes\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
@@ -465,6 +476,10 @@ void menuIncidentesAdmin() {
                 clickEnter();
                 break;
             }
+            case 9:
+                ordenarIncidentes(&lista_incidentes);
+                clickEnter();
+                break;
             case 0:
                 break;
             default:

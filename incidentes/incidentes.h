@@ -79,4 +79,12 @@ void criarRelatorio(ELEM* lista, const char* ficheiro, time_t inicio, time_t fim
 void fornecerListaIncidentes(ELEM* lista);
 void limparListaIncidentes(ELEM** lista);
 
+// Funções de ordenação
+void ordenarIncidentes(ELEM** lista);
+void ordenarPorID(ELEM* inicio);
+void ordenarPorDataCriacao(ELEM* inicio);
+void ordenarPorEstado(ELEM* inicio);
+void ordenarPorTecnico(ELEM* inicio);
+void trocarIncidentes(ELEM* a, ELEM* b);
+
 #endif // INCIDENTES_H
