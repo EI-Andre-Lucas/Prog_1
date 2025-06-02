@@ -5,5 +5,7 @@
 
 void clickEnter();
 void limparEcra();
+void limparBuffer();
+void lerPassword(char* password, int tamanho_max);
 
 #endif 

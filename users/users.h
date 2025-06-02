@@ -22,11 +22,17 @@ typedef struct users {
 } USERS;
 
 void FirstUserCreator();
-void login();
-void registo();
+bool login();
+void registo(bool criar_admin);
 void logout();
 void menu_login_reg(int opcao);
 bool guardarSessao(USERS *user);
 USERS* verificarSessaoAtiva();
+
+// Funções de gestão de utilizadores
+void listarUtilizadores();
+void removerUtilizador(const char* username);
+void modificarTipoUtilizador(const char* username, int novo_tipo);
+void alterarPasswordUtilizador(const char* username, const char* nova_senha);
 
 #endif

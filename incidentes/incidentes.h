@@ -54,23 +54,29 @@ typedef struct Incidente {
     int num_acoes;
     Ferramenta* ferramentas;
     int num_ferramentas;
-    struct Incidente* proximo;
 } Incidente;
 
+// Estrutura para lista duplamente ligada
+typedef struct Elem {
+    Incidente incidente;
+    struct Elem* proximo;
+    struct Elem* anterior;
+} ELEM;
+
 // Funções para gestão de incidentes
-bool verificarIncidentesExistentes(Incidente* lista);
-Incidente* criarIncidente(int id, TipoIncidente tipo, const char* descricao, Severidade severidade);
-void adicionarIncidente(Incidente** lista, Incidente* novo);
-void removerIncidente(Incidente** lista, int id);
-Incidente* procurarIncidente(Incidente* lista, int id);
-void atualizarEstadoIncidente(Incidente* incidente, EstadoIncidente novo_estado);
-void adicionarAcaoHistorico(Incidente* incidente, const char* descricao, const char* tecnico);
-void adicionarFerramenta(Incidente* incidente, const char* nome);
-void designarIncidente(Incidente* incidente, const char* novo_tecnico, const char* motivo);
-void guardarIncidentes(Incidente* lista, const char* ficheiro);
-Incidente* carregarIncidentes(const char* ficheiro);
-void criarRelatorio(Incidente* lista, const char* ficheiro, time_t inicio, time_t fim);
-void fornecerListaIncidentes(Incidente* lista);
-void limparListaIncidentes(Incidente** lista);
+bool verificarIncidentesExistentes(ELEM* lista);
+ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade severidade);
+void adicionarIncidente(ELEM** lista, ELEM* novo);
+void removerIncidente(ELEM** lista, int id);
+ELEM* procurarIncidente(ELEM* lista, int id);
+void atualizarEstadoIncidente(ELEM* elem, EstadoIncidente novo_estado);
+void adicionarAcaoHistorico(ELEM* elem, const char* descricao, const char* tecnico);
+void adicionarFerramenta(ELEM* elem, const char* nome);
+void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo);
+void guardarIncidentes(ELEM* lista, const char* ficheiro);
+ELEM* carregarIncidentes(const char* ficheiro);
+void criarRelatorio(ELEM* lista, const char* ficheiro, time_t inicio, time_t fim);
+void fornecerListaIncidentes(ELEM* lista);
+void limparListaIncidentes(ELEM** lista);
 
 #endif // INCIDENTES_H

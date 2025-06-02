@@ -15,7 +15,7 @@ typedef struct {
 
 void registrarLog(const char* username, const char* acao);
 void mostrarLogs();
-void mostrarLogsPorUsuario(const char* username);
+void mostrarLogsPorUtilizador(const char* username);
 void mostrarLogsPorPeriodo(time_t inicio, time_t fim);
 void salvarLogs(const char* arquivo);
 void carregarLogs(const char* arquivo);
