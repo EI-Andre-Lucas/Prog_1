@@ -29,6 +29,8 @@ void menu_login_reg(int opcao);
 bool guardarSessao(USERS *user);
 USERS* verificarSessaoAtiva();
 
+USERS* procurarTecnico(const char* username);
+
 // Funções de gestão de utilizadores
 void listarUtilizadores();
 void removerUtilizador(const char* username);

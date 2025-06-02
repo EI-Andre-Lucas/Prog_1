@@ -219,20 +219,35 @@ void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo)
         return;
     }
 
-    char descricao[500];
-    snprintf(descricao, sizeof(descricao), "Incidente delegado para %s. Motivo: %s", 
-             novo_tecnico, motivo);
-    
-    adicionarAcaoHistorico(elem, descricao, elem->incidente.tecnico_responsavel);
-    strncpy(elem->incidente.tecnico_responsavel, novo_tecnico, sizeof(elem->incidente.tecnico_responsavel) - 1);
-    elem->incidente.tecnico_responsavel[sizeof(elem->incidente.tecnico_responsavel) - 1] = '\0';
+    // Verificar se o técnico existe
+    USERS* tecnico = procurarTecnico(novo_tecnico);
+    if (tecnico == NULL) {
+        printf("\nErro: Técnico '%s' não encontrado no sistema.\n", novo_tecnico);
+        printf("Por favor, selecione outro técnico.\n");
+        return;
+    }
 
-    USERS* current_user = verificarSessaoAtiva();
-    if (current_user != NULL) {
-        char log_message[150];
-        snprintf(log_message, sizeof(log_message), "Delegou o incidente #%d para %s", 
-                elem->incidente.id, novo_tecnico);
-        registrarLog(current_user->username, log_message);
+    // Verificar se o usuário é um técnico
+    if (tecnico->tipoUser != TECNICO) {
+        printf("\nErro: O usuário '%s' não é um técnico.\n", novo_tecnico);
+        printf("Por favor, selecione um técnico válido.\n");
+        return;
+    }else{
+        char descricao[500];
+        snprintf(descricao, sizeof(descricao), "Incidente delegado para %s. Motivo: %s", 
+                 novo_tecnico, motivo);
+        adicionarAcaoHistorico(elem, descricao, elem->incidente.tecnico_responsavel);
+        strncpy(elem->incidente.tecnico_responsavel, novo_tecnico, sizeof(elem->incidente.tecnico_responsavel) - 1);
+        elem->incidente.tecnico_responsavel[sizeof(elem->incidente.tecnico_responsavel) - 1] = '\0';
+        USERS* current_user = verificarSessaoAtiva();
+        if (current_user != NULL) {
+            char log_message[150];
+            snprintf(log_message, sizeof(log_message), "Delegou o incidente #%d para %s", 
+                    elem->incidente.id, novo_tecnico);
+            registrarLog(current_user->username, log_message);
+        }
+        printf("\nIncidente #%d designado com sucesso para o técnico %s.\n", 
+        elem->incidente.id, novo_tecnico);
     }
 }
 

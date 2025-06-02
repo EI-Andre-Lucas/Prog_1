@@ -9,7 +9,7 @@
 
 #define HASH_STR_SIZE 21
 #define MAX_USERS 100
-#define USERS_FILE "users/users.dat"
+#define USERS_FILE "users/users.bin"
 
 static USERS users[MAX_USERS];
 static int num_users = 0;
@@ -121,21 +121,63 @@ bool login() {
         return false;
     }
 
-    int num_users_file;
-    fread(&num_users_file, sizeof(int), 1, file);
+    // Verifica o tamanho do arquivo
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    printf("\nDEBUG: Tamanho do arquivo: %ld bytes\n", file_size);
 
-    bool login_sucesso = false;
+    int num_users_file;
+    if (fread(&num_users_file, sizeof(int), 1, file) != 1) {
+        printf("Erro ao ler número de utilizadores!\n");
+        fclose(file);
+        return false;
+    }
+
+    printf("DEBUG: Número de usuários no arquivo: %d\n", num_users_file);
+    printf("DEBUG: Tamanho da estrutura USERS: %zu bytes\n", sizeof(USERS));
+
+    // Lê todos os usuários do arquivo
+    USERS* users = malloc(num_users_file * sizeof(USERS));
     for (int i = 0; i < num_users_file; i++) {
-        USERS user;
-        fread(&user, sizeof(USERS), 1, file);
-        if (strcmp(user.username, username) == 0 && 
-            strcmp(user.password, hashed_password) == 0) {
-            current_user = user;
-            login_sucesso = true;
-            break;
+        long posicao = ftell(file);
+        printf("\nDEBUG: Posição no arquivo antes de ler usuário %d: %ld\n", i + 1, posicao);
+        
+        if (fread(&users[i], sizeof(USERS), 1, file) != 1) {
+            printf("Erro ao ler utilizador do arquivo!\n");
+            free(users);
+            fclose(file);
+            return false;
         }
+
+        printf("DEBUG: Usuário %d lido:\n", i + 1);
+        printf("Username: [%s]\n", users[i].username);
+        printf("Password hash: [%s]\n", users[i].password);
+        printf("Tipo: %s\n", users[i].tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
+        printf("Primeiro Nome: [%s]\n", users[i].primeiroNome);
+        printf("Último Nome: [%s]\n", users[i].ultimoNome);
     }
     fclose(file);
+
+    // Procura o usuário
+    bool login_sucesso = false;
+    for (int i = 0; i < num_users_file; i++) {
+        if (strcmp(users[i].username, username) == 0) {
+            printf("\nDEBUG: Username encontrado!\n");
+            printf("Hash inserido: %s\n", hashed_password);
+            printf("Hash armazenado: %s\n", users[i].password);
+
+            if (strcmp(users[i].password, hashed_password) == 0) {
+                current_user = users[i];
+                login_sucesso = true;
+                break;
+            } else {
+                printf("Password incorreta!\n");
+                break;
+            }
+        }
+    }
+    free(users);
 
     if (login_sucesso) {
         if (guardarSessao(&current_user)) {
@@ -149,22 +191,20 @@ bool login() {
         }
     }
 
-    printf("Login falhou! Username ou password incorretos.\n");
-    registrarLog(username, "Tentativa de login falhou - credenciais inválidas");
-    clickEnter();
+    if (!login_sucesso) {
+        printf("Login falhou! Username ou password incorretos.\n");
+        registrarLog(username, "Tentativa de login falhou - credenciais inválidas");
+        clickEnter();
+    }
     return false;
 }
 
 void registo(bool criar_admin) {
-    if (num_users >= MAX_USERS) {
-        printf("Número máximo de utilizadores atingido!\n");
-        registrarLog("SISTEMA", "Tentativa de registo falhou - limite de utilizadores atingido");
-        clickEnter();
-        return;
-    }
-
     USERS novo_user;
-    novo_user.id = num_users + 1;
+    char password[50];
+
+    // Inicializa todos os campos com zeros
+    memset(&novo_user, 0, sizeof(USERS));
 
     printf("\n=== Registo ===\n");
     
@@ -176,56 +216,11 @@ void registo(bool criar_admin) {
     fgets(novo_user.ultimoNome, sizeof(novo_user.ultimoNome), stdin);
     novo_user.ultimoNome[strcspn(novo_user.ultimoNome, "\n")] = 0;
 
-    bool username_valido = false;
-    while (!username_valido) {
-        printf("Username: ");
-        fgets(novo_user.username, sizeof(novo_user.username), stdin);
-        novo_user.username[strcspn(novo_user.username, "\n")] = 0;
-
-        // Verifica se o username está vazio
-        if (strlen(novo_user.username) == 0) {
-            printf("Username não pode estar vazio! Tente novamente.\n");
-            continue;
-        }
-
-        // Verifica se o username já existe no array em memória
-        bool username_existe = false;
-        for (int i = 0; i < num_users; i++) {
-            if (strcmp(users[i].username, novo_user.username) == 0) {
-                username_existe = true;
-                break;
-            }
-        }
-
-        // Se não encontrou no array, verifica no arquivo
-        if (!username_existe) {
-            FILE* file = fopen(USERS_FILE, "rb");
-            if (file != NULL) {
-                int num_users_file;
-                fread(&num_users_file, sizeof(int), 1, file);
-
-                for (int i = 0; i < num_users_file; i++) {
-                    USERS user;
-                    fread(&user, sizeof(USERS), 1, file);
-                    if (strcmp(user.username, novo_user.username) == 0) {
-                        username_existe = true;
-                        break;
-                    }
-                }
-                fclose(file);
-            }
-        }
-
-        if (username_existe) {
-            printf("Username já existe! Por favor escolha outro.\n");
-            registrarLog(novo_user.username, "Tentativa de registo falhou - username já existe");
-        } else {
-            username_valido = true;
-        }
-    }
+    printf("Username: ");
+    fgets(novo_user.username, sizeof(novo_user.username), stdin);
+    novo_user.username[strcspn(novo_user.username, "\n")] = 0;
 
     printf("Password: ");
-    char password[50];
     lerPassword(password, sizeof(password));
 
     // Encripta a password antes de guardar
@@ -234,9 +229,63 @@ void registo(bool criar_admin) {
     // Define o tipo de utilizador baseado no parâmetro criar_admin
     novo_user.tipoUser = criar_admin ? ADMINISTRADOR : TECNICO;
 
-    users[num_users++] = novo_user;
-    save_user_count(); // Salva o novo número de utilizadores
-    printf("Registo realizado com sucesso!\n");
+    // Verifica se o diretório users existe
+    #ifdef _WIN32
+    system("if not exist users mkdir users");
+    #else
+    system("mkdir -p users");
+    #endif
+
+    // Lê o número atual de usuários
+    FILE* file = fopen(USERS_FILE, "rb");
+    int num_users = 0;
+    if (file != NULL) {
+        fread(&num_users, sizeof(int), 1, file);
+        fclose(file);
+    }
+
+    // Incrementa o número de usuários
+    num_users++;
+
+    // Se for o primeiro usuário, cria o arquivo com o número de usuários
+    if (num_users == 1) {
+        file = fopen(USERS_FILE, "wb");
+        if (file == NULL) {
+            printf("Erro ao criar arquivo de utilizadores!\n");
+            return;
+        }
+        fwrite(&num_users, sizeof(int), 1, file);
+        fclose(file);
+    } else {
+        // Atualiza o número de usuários no início do arquivo
+        file = fopen(USERS_FILE, "r+b");
+        if (file == NULL) {
+            printf("Erro ao abrir arquivo de utilizadores!\n");
+            return;
+        }
+        fwrite(&num_users, sizeof(int), 1, file);
+        fclose(file);
+    }
+
+    // Adiciona o novo usuário ao final do arquivo
+    file = fopen(USERS_FILE, "ab");
+    if (file == NULL) {
+        printf("Erro ao abrir arquivo de utilizadores!\n");
+        return;
+    }
+
+    // Escreve o novo usuário
+    fwrite(&novo_user, sizeof(USERS), 1, file);
+    fclose(file);
+
+    printf("\nDEBUG: Usuário registrado:\n");
+    printf("Username: %s\n", novo_user.username);
+    printf("Password hash: %s\n", novo_user.password);
+    printf("Tipo: %s\n", novo_user.tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
+    printf("Primeiro Nome: %s\n", novo_user.primeiroNome);
+    printf("Último Nome: %s\n", novo_user.ultimoNome);
+
+    printf("\nRegisto realizado com sucesso!\n");
     registrarLog(novo_user.username, criar_admin ? "Novo administrador registrado" : "Novo técnico registrado");
     clickEnter();
 }
@@ -296,6 +345,7 @@ void listarUtilizadores() {
     if (current_user != NULL) {
         registrarLog(current_user->username, "Listou todos os utilizadores");
     }
+    clickEnter();
 }
 
 void removerUtilizador(const char* username) {
@@ -461,4 +511,26 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
         snprintf(log_message, sizeof(log_message), "Alterou a password do utilizador %s", username);
         registrarLog(current_user->username, log_message);
     }
+}
+
+USERS* procurarTecnico(const char* username) {
+    FILE* file = fopen(USERS_FILE, "rb");
+    if (file == NULL) {
+        return NULL;
+    }
+
+    int num_users_file;
+    fread(&num_users_file, sizeof(int), 1, file);
+
+    static USERS user;
+    for (int i = 0; i < num_users_file; i++) {
+        fread(&user, sizeof(USERS), 1, file);
+        if (strcmp(user.username, username) == 0) {
+            fclose(file);
+            return &user;
+        }
+    }
+
+    fclose(file);
+    return NULL; // Usuário não encontrado
 }
