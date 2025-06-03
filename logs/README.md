@@ -1,7 +1,7 @@
 # Módulo de Sistema de Logs
 
 ## Descrição
-Este módulo gere o registo de todas as operações realizadas no sistema, permitindo a auditoria e rastreabilidade das ações dos utilizadores.
+Este módulo gere o registo de todas as operações realizadas no sistema, permitindo a sua auditoria e a rastreabilidade das ações dos utilizadores.
 
 ## Estruturas de Dados
 
@@ -52,7 +52,7 @@ void listarLogs() {
 - Os logs são essenciais para auditoria e segurança
 
 ## Boas Práticas
-- Registrar todas as operações críticas
+- Registar todas as operações críticas
 - Incluir informações relevantes no campo de ação
 - Manter os logs organizados por data
 - Realizar limpeza periódica de logs antigos

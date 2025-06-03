@@ -25,7 +25,7 @@ int obterProximoId(ELEM* lista) {
 ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade severidade) {
     ELEM* lista = carregarIncidentes("incidentes.bin");
     if (lista == NULL) {
-        lista = NULL; // Inicializa lista vazia se não existir arquivo
+        lista = NULL; // Cria lista vazia se não existir arquivo
     }
     ELEM* novo = (ELEM*)malloc(sizeof(ELEM));
     if (novo == NULL) {
@@ -207,7 +207,7 @@ void adicionarFerramenta(ELEM* elem, const char* nome) {
     USERS* current_user = verificarSessaoAtiva();
     if (current_user != NULL) {
         char log_message[150];
-        snprintf(log_message, sizeof(log_message), "Registrou uso da ferramenta '%s' no incidente #%d", 
+        snprintf(log_message, sizeof(log_message), "Registou uso da ferramenta '%s' no incidente #%d", 
                 nome, elem->incidente.id);
         registrarLog(current_user->username, log_message);
     }
@@ -227,9 +227,9 @@ void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo)
         return;
     }
 
-    // Verificar se o usuário é um técnico
+    // Verificar se o user é um técnico
     if (tecnico->tipoUser != TECNICO) {
-        printf("\nErro: O usuário '%s' não é um técnico.\n", novo_tecnico);
+        printf("\nErro: O user '%s' não é um técnico.\n", novo_tecnico);
         printf("Por favor, selecione um técnico válido.\n");
         return;
     }else{
@@ -242,11 +242,11 @@ void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo)
         USERS* current_user = verificarSessaoAtiva();
         if (current_user != NULL) {
             char log_message[150];
-            snprintf(log_message, sizeof(log_message), "Delegou o incidente #%d para %s", 
+            snprintf(log_message, sizeof(log_message), "Atribuiu o incidente #%d para %s", 
                     elem->incidente.id, novo_tecnico);
             registrarLog(current_user->username, log_message);
         }
-        printf("\nIncidente #%d designado com sucesso para o técnico %s.\n", 
+        printf("\nIncidente #%d atribuído com sucesso para o técnico %s.\n", 
         elem->incidente.id, novo_tecnico);
     }
 }
@@ -365,10 +365,10 @@ bool verificarIncidentesExistentes(ELEM* lista) {
         return true;
     }
 
-    // Se não houver na lista, tenta carregar do arquivo
+    // Se não houver na lista, tenta carregar do ficheiro
     FILE *f = fopen("incidentes.bin", "rb");
     if (!f) {
-        printf("\nNão existem incidentes registrados no sistema.\n");
+        printf("\nNão existem incidentes registados no sistema.\n");
         clickEnter();
         return false;
     }
@@ -387,23 +387,23 @@ void limparListaIncidentes(ELEM** lista) {
     while (atual != NULL) {
         ELEM* proximo = atual->proximo;
         
-        // Libera o histórico
+        // Mostra o histórico
         if (atual->incidente.historico != NULL) {
             free(atual->incidente.historico);
         }
         
-        // Libera as ferramentas
+        // Mostra as ferramentas
         if (atual->incidente.ferramentas != NULL) {
             free(atual->incidente.ferramentas);
         }
         
-        // Libera o elemento
+        // Mostra o elemento
         free(atual);
         
         atual = proximo;
     }
     
-    // Reseta o ponteiro da lista
+    // Reposiciona o ponteiro da lista
     *lista = NULL;
 }
 

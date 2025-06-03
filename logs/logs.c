@@ -11,7 +11,7 @@
 static Log logs[MAX_LOGS];
 static int num_logs = 0;
 
-void registrarLog(const char* username, const char* acao) {
+void registarLog(const char* username, const char* acao) {
     if (num_logs >= MAX_LOGS) {
         printf("Aviso: Número máximo de logs atingido!\n");
         return;
@@ -32,7 +32,7 @@ void mostrarLogs() {
     printf("\n=== Logs do Sistema ===\n");
     for (int i = 0; i < num_logs; i++) {
         printf("Data/Hora: %s", ctime(&logs[i].data_hora));
-        printf("Utilizador: %s\n", logs[i].username);
+        printf("User: %s\n", logs[i].username);
         printf("Ação: %s\n\n", logs[i].acao);
     }
 
@@ -70,7 +70,7 @@ void mostrarLogsPorPeriodo(time_t inicio, time_t fim) {
     for (int i = 0; i < num_logs; i++) {
         if (logs[i].data_hora >= inicio && logs[i].data_hora <= fim) {
             printf("Data/Hora: %s", ctime(&logs[i].data_hora));
-            printf("Utilizador: %s\n", logs[i].username);
+            printf("User: %s\n", logs[i].username);
             printf("Ação: %s\n\n", logs[i].acao);
             encontrou = true;
         }
@@ -82,17 +82,17 @@ void mostrarLogsPorPeriodo(time_t inicio, time_t fim) {
     USERS* current_user = verificarSessaoAtiva();
     if (current_user != NULL) {
         char log_message[150];
-        snprintf(log_message, sizeof(log_message), "Visualizou logs do período %s a %s", 
+        snprintf(log_message, sizeof(log_message), "Visualizou os logs do período %s a %s", 
                 ctime(&inicio), ctime(&fim));
         registrarLog(current_user->username, log_message);
     }
 }
 
-void salvarLogs(const char* arquivo) {
-    FILE* file = fopen(arquivo, "w");
+void guardarLogs(const char* ficheiro) {
+    FILE* file = fopen(ficheiro, "w");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo para salvar logs!\n");
-        registrarLog("SISTEMA", "Erro ao salvar logs - arquivo não encontrado");
+        printf("Erro ao abrir ficheiro para guardar logs!\n");
+        registrarLog("SISTEMA", "Erro ao guardar logs - ficheiro não encontrado");
         return;
     }
 
@@ -105,20 +105,20 @@ void salvarLogs(const char* arquivo) {
     }
 
     fclose(file);
-    printf("Logs salvos com sucesso no arquivo %s!\n", arquivo);
+    printf("Logs guardados com sucesso no ficheiro %s!\n", ficheiro);
 
     USERS* current_user = verificarSessaoAtiva();
     if (current_user != NULL) {
         char log_message[150];
-        snprintf(log_message, sizeof(log_message), "Salvou os logs no arquivo %s", arquivo);
+        snprintf(log_message, sizeof(log_message), "Guardou os logs no ficheiro %s", ficheiro);
         registrarLog(current_user->username, log_message);
     }
 }
 
-void carregarLogs(const char* arquivo) {
-    FILE* file = fopen(arquivo, "r");
+void carregarLogs(const char* ficheiro) {
+    FILE* file = fopen(ficheiro, "r");
     if (file == NULL) {
-        registrarLog("SISTEMA", "Erro ao carregar logs - arquivo não encontrado");
+        registarLog("SISTEMA", "Erro ao carregar logs - ficheiro não encontrado");
         return;
     }
 
@@ -144,5 +144,5 @@ void carregarLogs(const char* arquivo) {
     }
 
     fclose(file);
-    registrarLog("SISTEMA", "Logs carregados com sucesso");
+    registarLog("SISTEMA", "Logs carregados com sucesso");
 }

@@ -57,7 +57,7 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                     atualizarEstadoIncidente(incidente, estado);
                     printf("Estado atualizado com sucesso!\n");
                 } else {
-                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                    printf("O incidente não foi encontrado ou não lhe está atribuído.\n");
                 }
                 break;
             }
@@ -76,7 +76,7 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                     adicionarAcaoHistorico(incidente, comentario, tecnico);
                     printf("Comentário adicionado com sucesso!\n");
                 } else {
-                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                    printf("O incidente não foi encontrado ou não lhe está atribuído.\n");
                 }
                 break;
             }
@@ -93,9 +93,9 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                 ELEM* incidente = procurarIncidente(*lista_incidentes, id);
                 if (incidente && strcmp(incidente->incidente.tecnico_responsavel, tecnico) == 0) {
                     adicionarFerramenta(incidente, ferramenta);
-                    printf("Ferramenta registrada com sucesso!\n");
+                    printf("Ferramenta registada com sucesso!\n");
                 } else {
-                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                    printf("O incidente não foi encontrado ou não lhe está atribuído..\n");
                 }
                 break;
             }
@@ -117,7 +117,7 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                     designarIncidente(incidente, novo_tecnico, motivo);
                     printf("Incidente delegado com sucesso!\n");
                 } else {
-                    printf("Incidente não encontrado ou não está atribuído a você.\n");
+                    printf("O incidente não foi encontrado ou não lhe está atribuído.\n");
                 }
                 break;
             }
@@ -260,7 +260,7 @@ void menuTecnico() {
                         atual = atual->proximo;
                     }
                     if (!encontrou) {
-                        printf("Não existem incidentes resolvidos por você.\n");
+                        printf("Não existem incidentes resolvidos por si.\n");
                     }
                     clickEnter();
                 }
@@ -321,7 +321,7 @@ void menuIncidentesAdmin() {
             }
             case 2: {
                 if (lista_incidentes == NULL) {
-                    printf("\nNão há incidentes registrados.\n");
+                    printf("\nNão há incidentes registados.\n");
                 } else {
                     printf("\n=== Lista de Incidentes ===\n");
                     ELEM* atual = lista_incidentes;
@@ -464,12 +464,12 @@ void menuIncidentesAdmin() {
                 data_fim->tm_sec = 59;
                 fim = mktime(data_fim);
 
-                printf("Nome do arquivo de relatório: ");
+                printf("Nome do ficheiro de relatório: ");
                 scanf("%s", ficheiro);
                 limparBuffer();
 
                 criarRelatorio(lista_incidentes, ficheiro, inicio, fim);
-                printf("\nRelatório gerado com sucesso!\n");
+                printf("\nRelatório criado com sucesso!\n");
 
                 free(data_inicio);
                 free(data_fim);
@@ -686,7 +686,7 @@ void menuLogs() {
         printf("1. Ver todos os logs\n");
         printf("2. Filtrar logs por utilizador\n");
         printf("3. Filtrar logs por período\n");
-        printf("4. Salvar logs em arquivo\n");
+        printf("4. Guardar logs em ficheiro\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
@@ -730,11 +730,11 @@ void menuLogs() {
                 break;
             }
             case 4: {
-                char arquivo[100];
-                printf("Nome do arquivo para salvar os logs: ");
-                fgets(arquivo, sizeof(arquivo), stdin);
-                arquivo[strcspn(arquivo, "\n")] = 0;
-                salvarLogs(arquivo);
+                char ficheiro[100];
+                printf("Nome do ficheiro para guardar os logs: ");
+                fgets(ficheiro, sizeof(ficheiro), stdin);
+                ficheiro[strcspn(ficheiro, "\n")] = 0;
+                guardarLogs(ficheiro);
                 clickEnter();
                 break;
             }

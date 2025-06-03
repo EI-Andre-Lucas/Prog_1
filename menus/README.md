@@ -66,4 +66,4 @@ void menuAdmin() {
 ## Segurança
 - Verificação de permissões em cada menu
 - Proteção contra acesso não autorizado
-- Registro de todas as ações nos logs 
+- Registo de todas as ações nos logs 

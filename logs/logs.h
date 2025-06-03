@@ -13,12 +13,12 @@ typedef struct {
     time_t data_hora;
 } Log;
 
-void registrarLog(const char* username, const char* acao);
+void registarLog(const char* username, const char* acao);
 void mostrarLogs();
 void mostrarLogsPorUtilizador(const char* username);
 void mostrarLogsPorPeriodo(time_t inicio, time_t fim);
-void salvarLogs(const char* arquivo);
-void carregarLogs(const char* arquivo);
+void guardarLogs(const char* ficheiro);
+void carregarLogs(const char* ficheiro);
 
 #endif
 
