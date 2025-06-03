@@ -29,7 +29,7 @@ ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade sever
     }
     ELEM* novo = (ELEM*)malloc(sizeof(ELEM));
     if (novo == NULL) {
-        registrarLog("SISTEMA", "Erro ao criar incidente - falha de memória");
+        registarLog("SISTEMA", "Erro ao criar incidente - falha de memória");
         return NULL;
     }
 
@@ -56,7 +56,7 @@ ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade sever
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Criou o incidente #%d (%s)", 
                 novo->incidente.id, descricao);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 
     return novo;
@@ -78,7 +78,7 @@ void adicionarIncidente(ELEM** lista, ELEM* novo) {
 
 void removerIncidente(ELEM** lista, int id) {
     if (*lista == NULL) {
-        registrarLog("SISTEMA", "Tentativa de remover incidente falhou - lista vazia");
+        registarLog("SISTEMA", "Tentativa de remover incidente falhou - lista vazia");
         return;
     }
 
@@ -88,7 +88,7 @@ void removerIncidente(ELEM** lista, int id) {
     }
 
     if (atual == NULL) {
-        registrarLog("SISTEMA", "Tentativa de remover incidente falhou - incidente não encontrado");
+        registarLog("SISTEMA", "Tentativa de remover incidente falhou - incidente não encontrado");
         return;
     }
 
@@ -108,7 +108,7 @@ void removerIncidente(ELEM** lista, int id) {
     if (current_user != NULL) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Removeu o incidente #%d", id);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 
     free(atual->incidente.historico);
@@ -129,7 +129,7 @@ ELEM* procurarIncidente(ELEM* lista, int id) {
 
 void atualizarEstadoIncidente(ELEM* elem, EstadoIncidente novo_estado) {
     if (elem == NULL) {
-        registrarLog("SISTEMA", "Tentativa de atualizar estado falhou - incidente não encontrado");
+        registarLog("SISTEMA", "Tentativa de atualizar estado falhou - incidente não encontrado");
         return;
     }
     
@@ -146,13 +146,13 @@ void atualizarEstadoIncidente(ELEM* elem, EstadoIncidente novo_estado) {
         const char* estados[] = {"Por Tratar", "Em Análise", "Resolvido"};
         snprintf(log_message, sizeof(log_message), "Alterou o estado do incidente #%d de %s para %s", 
                 elem->incidente.id, estados[estado_anterior], estados[novo_estado]);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
 void adicionarAcaoHistorico(ELEM* elem, const char* descricao, const char* tecnico) {
     if (elem == NULL) {
-        registrarLog("SISTEMA", "Tentativa de adicionar ação ao histórico falhou - incidente não encontrado");
+        registarLog("SISTEMA", "Tentativa de adicionar ação ao histórico falhou - incidente não encontrado");
         return;
     }
 
@@ -160,7 +160,7 @@ void adicionarAcaoHistorico(ELEM* elem, const char* descricao, const char* tecni
                                           (elem->incidente.num_acoes + 1) * sizeof(HistoricoAcao));
     
     if (novo_historico == NULL) {
-        registrarLog("SISTEMA", "Erro ao adicionar ação ao histórico - falha de memória");
+        registarLog("SISTEMA", "Erro ao adicionar ação ao histórico - falha de memória");
         return;
     }
 
@@ -178,12 +178,12 @@ void adicionarAcaoHistorico(ELEM* elem, const char* descricao, const char* tecni
     char log_message[150];
     snprintf(log_message, sizeof(log_message), "Adicionou comentário ao incidente #%d: %s", 
             elem->incidente.id, descricao);
-    registrarLog(tecnico, log_message);
+    registarLog(tecnico, log_message);
 }
 
 void adicionarFerramenta(ELEM* elem, const char* nome) {
     if (elem == NULL) {
-        registrarLog("SISTEMA", "Tentativa de adicionar ferramenta falhou - incidente não encontrado");
+        registarLog("SISTEMA", "Tentativa de adicionar ferramenta falhou - incidente não encontrado");
         return;
     }
 
@@ -191,7 +191,7 @@ void adicionarFerramenta(ELEM* elem, const char* nome) {
                                           (elem->incidente.num_ferramentas + 1) * sizeof(Ferramenta));
     
     if (novas_ferramentas == NULL) {
-        registrarLog("SISTEMA", "Erro ao adicionar ferramenta - falha de memória");
+        registarLog("SISTEMA", "Erro ao adicionar ferramenta - falha de memória");
         return;
     }
 
@@ -209,13 +209,13 @@ void adicionarFerramenta(ELEM* elem, const char* nome) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Registou uso da ferramenta '%s' no incidente #%d", 
                 nome, elem->incidente.id);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
 void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo) {
     if (elem == NULL) {
-        registrarLog("SISTEMA", "Tentativa de designar incidente falhou - incidente não encontrado");
+        registarLog("SISTEMA", "Tentativa de designar incidente falhou - incidente não encontrado");
         return;
     }
 
@@ -244,7 +244,7 @@ void designarIncidente(ELEM* elem, const char* novo_tecnico, const char* motivo)
             char log_message[150];
             snprintf(log_message, sizeof(log_message), "Atribuiu o incidente #%d para %s", 
                     elem->incidente.id, novo_tecnico);
-            registrarLog(current_user->username, log_message);
+            registarLog(current_user->username, log_message);
         }
         printf("\nIncidente #%d atribuído com sucesso para o técnico %s.\n", 
         elem->incidente.id, novo_tecnico);

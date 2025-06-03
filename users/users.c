@@ -181,11 +181,11 @@ bool login() {
 
     if (login_sucesso) {
         if (guardarSessao(&current_user)) {
-            registrarLog(username, "Login realizado com sucesso");
+            registarLog(username, "Login realizado com sucesso");
             return true;
         } else {
             printf("Erro ao guardar sessão!\n");
-            registrarLog(username, "Falha ao guardar sessão");
+            registarLog(username, "Falha ao guardar sessão");
             clickEnter();
             return false;
         }
@@ -193,7 +193,7 @@ bool login() {
 
     if (!login_sucesso) {
         printf("Login falhou! Username ou password incorretos.\n");
-        registrarLog(username, "Tentativa de login falhou - credenciais inválidas");
+        registarLog(username, "Tentativa de login falhou - credenciais inválidas");
         clickEnter();
     }
     return false;
@@ -286,21 +286,21 @@ void registo(bool criar_admin) {
     printf("Último Nome: %s\n", novo_user.ultimoNome);
 
     printf("\nRegisto realizado com sucesso!\n");
-    registrarLog(novo_user.username, criar_admin ? "Novo administrador registrado" : "Novo técnico registrado");
+    registarLog(novo_user.username, criar_admin ? "Novo administrador registrado" : "Novo técnico registrado");
     clickEnter();
 }
 
 void logout() {
     USERS* user = verificarSessaoAtiva();
     if (user != NULL) {
-        registrarLog(user->username, "Logout realizado");
+        registarLog(user->username, "Logout realizado");
     }
     
     if (remove("users/sessao.dat") == 0) {
         printf("\nLogout realizado com sucesso!\n");
     } else {
         printf("\nErro ao realizar logout!\n");
-        registrarLog("SISTEMA", "Erro ao realizar logout");
+        registarLog("SISTEMA", "Erro ao realizar logout");
     }
     clickEnter();
     menuPrincipal(); // Retorna ao menu inicial após o logout
@@ -324,7 +324,7 @@ void listarUtilizadores() {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
         printf("Erro ao abrir arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao listar utilizadores - arquivo não encontrado");
+        registarLog("SISTEMA", "Erro ao listar utilizadores - arquivo não encontrado");
         return;
     }
 
@@ -343,7 +343,7 @@ void listarUtilizadores() {
     
     USERS* current_user = verificarSessaoAtiva();
     if (current_user != NULL) {
-        registrarLog(current_user->username, "Listou todos os utilizadores");
+        registarLog(current_user->username, "Listou todos os utilizadores");
     }
     clickEnter();
 }
@@ -352,7 +352,7 @@ void removerUtilizador(const char* username) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
         printf("Erro ao abrir arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao remover utilizador - arquivo não encontrado");
+        registarLog("SISTEMA", "Erro ao remover utilizador - arquivo não encontrado");
         return;
     }
 
@@ -376,7 +376,7 @@ void removerUtilizador(const char* username) {
 
     if (!found) {
         printf("Utilizador não encontrado!\n");
-        registrarLog("SISTEMA", "Tentativa de remover utilizador falhou - utilizador não encontrado");
+        registarLog("SISTEMA", "Tentativa de remover utilizador falhou - utilizador não encontrado");
         free(users);
         return;
     }
@@ -384,7 +384,7 @@ void removerUtilizador(const char* username) {
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
         printf("Erro ao salvar arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao remover utilizador - falha ao salvar arquivo");
+        registarLog("SISTEMA", "Erro ao remover utilizador - falha ao salvar arquivo");
         free(users);
         return;
     }
@@ -400,7 +400,7 @@ void removerUtilizador(const char* username) {
     if (current_user != NULL) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Removeu o utilizador %s", username);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
@@ -408,7 +408,7 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
         printf("Erro ao abrir arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao modificar tipo de utilizador - arquivo não encontrado");
+        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - arquivo não encontrado");
         return;
     }
 
@@ -429,7 +429,7 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
 
     if (!found) {
         printf("Utilizador não encontrado!\n");
-        registrarLog("SISTEMA", "Tentativa de modificar tipo de utilizador falhou - utilizador não encontrado");
+        registarLog("SISTEMA", "Tentativa de modificar tipo de utilizador falhou - utilizador não encontrado");
         free(users);
         return;
     }
@@ -437,7 +437,7 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
         printf("Erro ao salvar arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao modificar tipo de utilizador - falha ao salvar arquivo");
+        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - falha ao salvar arquivo");
         free(users);
         return;
     }
@@ -454,7 +454,7 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Modificou o tipo do utilizador %s para %s", 
                 username, novo_tipo == ADMINISTRADOR ? "Administrador" : "Técnico");
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
@@ -462,7 +462,7 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
         printf("Erro ao abrir arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao alterar password - arquivo não encontrado");
+        registarLog("SISTEMA", "Erro ao alterar password - arquivo não encontrado");
         return;
     }
 
@@ -485,7 +485,7 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
 
     if (!found) {
         printf("Utilizador não encontrado!\n");
-        registrarLog("SISTEMA", "Tentativa de alterar password falhou - utilizador não encontrado");
+        registarLog("SISTEMA", "Tentativa de alterar password falhou - utilizador não encontrado");
         free(users);
         return;
     }
@@ -493,7 +493,7 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
         printf("Erro ao salvar arquivo de utilizadores!\n");
-        registrarLog("SISTEMA", "Erro ao alterar password - falha ao salvar arquivo");
+        registarLog("SISTEMA", "Erro ao alterar password - falha ao salvar arquivo");
         free(users);
         return;
     }
@@ -509,7 +509,7 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
     if (current_user != NULL) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Alterou a password do utilizador %s", username);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 

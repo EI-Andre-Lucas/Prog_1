@@ -46,7 +46,7 @@ int main(){
     guardarIncidentes(lista_incidentes, "incidentes.bin");
     
     // Salvar logs antes de sair
-    salvarLogs("logs.bin");
+    guardarLogs("logs.bin");
     
     fornecerListaIncidentes(lista_incidentes);
 

@@ -38,7 +38,7 @@ void mostrarLogs() {
 
     USERS* current_user = verificarSessaoAtiva();
     if (current_user != NULL) {
-        registrarLog(current_user->username, "Visualizou todos os logs do sistema");
+        registarLog(current_user->username, "Visualizou todos os logs do sistema");
     }
 }
 
@@ -60,7 +60,7 @@ void mostrarLogsPorUtilizador(const char* username) {
     if (current_user != NULL) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Visualizou os logs do utilizador %s", username);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
@@ -84,7 +84,7 @@ void mostrarLogsPorPeriodo(time_t inicio, time_t fim) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Visualizou os logs do período %s a %s", 
                 ctime(&inicio), ctime(&fim));
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
@@ -92,7 +92,7 @@ void guardarLogs(const char* ficheiro) {
     FILE* file = fopen(ficheiro, "w");
     if (file == NULL) {
         printf("Erro ao abrir ficheiro para guardar logs!\n");
-        registrarLog("SISTEMA", "Erro ao guardar logs - ficheiro não encontrado");
+        registarLog("SISTEMA", "Erro ao guardar logs - ficheiro não encontrado");
         return;
     }
 
@@ -111,7 +111,7 @@ void guardarLogs(const char* ficheiro) {
     if (current_user != NULL) {
         char log_message[150];
         snprintf(log_message, sizeof(log_message), "Guardou os logs no ficheiro %s", ficheiro);
-        registrarLog(current_user->username, log_message);
+        registarLog(current_user->username, log_message);
     }
 }
 
