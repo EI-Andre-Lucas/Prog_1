@@ -36,6 +36,7 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
         printf("5. Delegar incidente\n");
         printf("6. Ver histórico de incidentes resolvidos\n");
         printf("7. Ordenar incidentes\n");
+        printf("8. Gerir respostas\n");
         printf("0. Voltar\n");
         printf("Escolha uma opção: ");
         scanf("%d", &opcao);
@@ -138,6 +139,70 @@ void menuIncidentesTecnico(ELEM** lista_incidentes, const char* tecnico) {
                 ordenarIncidentes(lista_incidentes);
                 clickEnter();
                 break;
+            case 8: {
+                int id;
+                printf("ID do incidente: ");
+                scanf("%d", &id);
+                getchar();
+                
+                ELEM* incidente = procurarIncidente(*lista_incidentes, id);
+                if (incidente && strcmp(incidente->incidente.tecnico_responsavel, tecnico) == 0) {
+                    int subopcao;
+                    do {
+                        printf("\n=== Gestão de Respostas ===\n");
+                        printf("1. Ver respostas\n");
+                        printf("2. Adicionar resposta\n");
+                        printf("3. Marcar resposta como solução\n");
+                        printf("0. Voltar\n");
+                        printf("Escolha uma opção: ");
+                        scanf("%d", &subopcao);
+                        getchar();
+
+                        switch (subopcao) {
+                            case 1:
+                                listarRespostas(incidente);
+                                clickEnter();
+                                break;
+                            case 2: {
+                                char resposta[1000];
+                                bool solucao;
+                                printf("Resposta: ");
+                                fgets(resposta, sizeof(resposta), stdin);
+                                resposta[strcspn(resposta, "\n")] = 0;
+                                printf("Esta resposta resolve o incidente? (1-Sim, 0-Não): ");
+                                scanf("%d", &solucao);
+                                getchar();
+                                
+                                adicionarResposta(incidente, resposta, tecnico, solucao);
+                                printf("\nResposta adicionada com sucesso!\n");
+                                clickEnter();
+                                break;
+                            }
+                            case 3: {
+                                int indice;
+                                listarRespostas(incidente);
+                                printf("\nNúmero da resposta a marcar como solução: ");
+                                scanf("%d", &indice);
+                                getchar();
+                                
+                                marcarRespostaComoSolucao(incidente, indice - 1);
+                                printf("\nResposta marcada como solução!\n");
+                                clickEnter();
+                                break;
+                            }
+                            case 0:
+                                break;
+                            default:
+                                printf("\nOpção inválida!\n");
+                                clickEnter();
+                        }
+                    } while (subopcao != 0);
+                } else {
+                    printf("O incidente não foi encontrado ou não lhe está atribuído.\n");
+                    clickEnter();
+                }
+                break;
+            }
             case 0:
                 break;
             default:

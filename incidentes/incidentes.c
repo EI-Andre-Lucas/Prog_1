@@ -23,7 +23,7 @@ int obterProximoId(ELEM* lista) {
 }
 
 ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade severidade) {
-    ELEM* lista = carregarIncidentes("incidentes.bin");
+    ELEM* lista = carregarIncidentes("../incidentes/incidentes.bin");
     if (lista == NULL) {
         lista = NULL; // Cria lista vazia se não existir arquivo
     }
@@ -507,4 +507,148 @@ void ordenarIncidentes(ELEM** lista) {
     // Guardar a lista ordenada no ficheiro
     guardarIncidentes(*lista, "incidentes.bin");
     printf("\nLista de incidentes atualizada e guardada.\n");
+}
+
+void adicionarResposta(ELEM* elem, const char* resposta, const char* autor, bool solucao) {
+    if (elem == NULL) {
+        printf("\nErro: Incidente não encontrado.\n");
+        return;
+    }
+
+    RespostaIncidente* novas_respostas = realloc(elem->incidente.respostas,
+                                               (elem->incidente.num_respostas + 1) * sizeof(RespostaIncidente));
+    
+    if (novas_respostas == NULL) {
+        printf("\nErro: Não foi possível adicionar a resposta.\n");
+        return;
+    }
+
+    elem->incidente.respostas = novas_respostas;
+    RespostaIncidente* nova_resposta = &elem->incidente.respostas[elem->incidente.num_respostas];
+    
+    nova_resposta->data_hora = time(NULL);
+    strncpy(nova_resposta->resposta, resposta, sizeof(nova_resposta->resposta) - 1);
+    nova_resposta->resposta[sizeof(nova_resposta->resposta) - 1] = '\0';
+    strncpy(nova_resposta->autor, autor, sizeof(nova_resposta->autor) - 1);
+    nova_resposta->autor[sizeof(nova_resposta->autor) - 1] = '\0';
+    nova_resposta->solucao = solucao;
+    
+    elem->incidente.num_respostas++;
+
+    printf("\nResposta adicionada com sucesso.\n");
+    registarLog(autor, "Adicionou resposta ao incidente");
+}
+
+void marcarRespostaComoSolucao(ELEM* elem, int indice_resposta) {
+    if (elem == NULL || indice_resposta < 0 || indice_resposta >= elem->incidente.num_respostas) {
+        printf("\nErro: Resposta inválida.\n");
+        return;
+    }
+
+    // Verificar se o autor tem permissão para marcar como solução
+    USERS* current_user = verificarSessaoAtiva();
+    if (current_user == NULL) {
+        printf("\nErro: Sessão inválida.\n");
+        return;
+    }
+
+    bool tem_permissao = false;
+    if (current_user->tipoUser == ADMINISTRADOR) {
+        tem_permissao = true;
+    } else if (strcmp(current_user->username, elem->incidente.tecnico_responsavel) == 0) {
+        tem_permissao = true;
+    }
+
+    if (!tem_permissao) {
+        printf("\nErro: Apenas o técnico que criou o incidente ou um administrador podem marcar uma resposta como solução.\n");
+        registarLog(current_user->username, "Tentativa de marcar resposta como solução sem permissão");
+        return;
+    }
+
+    for (int i = 0; i < elem->incidente.num_respostas; i++) {
+        elem->incidente.respostas[i].solucao = false;
+    }
+
+    elem->incidente.respostas[indice_resposta].solucao = true;
+    atualizarEstadoIncidente(elem, RESOLVIDO);
+
+    printf("\nResposta marcada como solução e incidente atualizado.\n");
+    registarLog(current_user->username, "Marcou resposta como solução");
+}
+
+void listarRespostas(ELEM* elem) {
+    if (elem == NULL || elem->incidente.num_respostas == 0) {
+        printf("\nNão existem respostas para este incidente.\n");
+        return;
+    }
+
+    printf("\n=== Respostas ao Incidente #%d ===\n", elem->incidente.id);
+    for (int i = 0; i < elem->incidente.num_respostas; i++) {
+        RespostaIncidente* resp = &elem->incidente.respostas[i];
+        printf("\nResposta #%d:\n", i + 1);
+        printf("Data/Hora: %s", ctime(&resp->data_hora));
+        printf("Autor: %s\n", resp->autor);
+        printf("Resposta: %s\n", resp->resposta);
+        if (resp->solucao) {
+            printf("✓ Solução aceite\n");
+        }
+        printf("------------------------\n");
+    }
+}
+
+void menuRespostasIncidente(ELEM* elem) {
+    if (elem == NULL) {
+        printf("\nErro: Incidente não encontrado.\n");
+        return;
+    }
+
+    USERS* current_user = verificarSessaoAtiva();
+    if (current_user == NULL) {
+        printf("\nErro: Sessão inválida.\n");
+        return;
+    }
+
+    int opcao;
+    char resposta[1000];
+    int indice_resposta;
+
+    do {
+        printf("\n=== Gestão de Respostas ===\n");
+        printf("1. Ver respostas\n");
+        printf("2. Adicionar resposta\n");
+        if (current_user->tipoUser == ADMINISTRADOR || 
+            strcmp(current_user->username, elem->incidente.tecnico_responsavel) == 0) {
+            printf("3. Marcar resposta como solução\n");
+        }
+        printf("0. Voltar\n");
+        printf("Opção: ");
+        scanf("%d", &opcao);
+        while (getchar() != '\n');
+
+        switch (opcao) {
+            case 1:
+                listarRespostas(elem);
+                break;
+            case 2:
+                printf("\nEscreva a sua resposta: ");
+                fgets(resposta, sizeof(resposta), stdin);
+                resposta[strcspn(resposta, "\n")] = 0;
+                adicionarResposta(elem, resposta, current_user->username, false);
+                break;
+            case 3:
+                if (current_user->tipoUser == ADMINISTRADOR || 
+                    strcmp(current_user->username, elem->incidente.tecnico_responsavel) == 0) {
+                    listarRespostas(elem);
+                    printf("\nIndique o número da resposta a marcar como solução: ");
+                    scanf("%d", &indice_resposta);
+                    while (getchar() != '\n');
+                    marcarRespostaComoSolucao(elem, indice_resposta - 1);
+                }
+                break;
+            case 0:
+                return;
+            default:
+                printf("\nOpção inválida!\n");
+        }
+    } while (opcao != 0);
 }

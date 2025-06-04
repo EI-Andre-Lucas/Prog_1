@@ -20,14 +20,21 @@ void load_user_count() {
     if (file != NULL) {
         fread(&num_users, sizeof(int), 1, file);
         fclose(file);
+        registarLog("SISTEMA", "Número de utilizadores carregado com sucesso");
+    } else {
+        registarLog("SISTEMA", "Falha ao carregar número de utilizadores - ficheiro não encontrado");
     }
 }
 
 bool guardarSessao(USERS *user) {
     FILE *f = fopen("users/sessao.dat", "wb");
-    if (!f) return false;
+    if (!f) {
+        registarLog("SISTEMA", "Falha ao guardar sessão - erro ao abrir ficheiro");
+        return false;
+    }
     fwrite(user, sizeof(USERS), 1, f);
     fclose(f);
+    registarLog(user->username, "Sessão guardada com sucesso");
     return true;
 }
 
@@ -37,6 +44,9 @@ void save_user_count() {
     if (file != NULL) {
         fwrite(&num_users, sizeof(int), 1, file);
         fclose(file);
+        registarLog("SISTEMA", "Número de utilizadores guardado com sucesso");
+    } else {
+        registarLog("SISTEMA", "Falha ao guardar número de utilizadores - erro ao abrir ficheiro");
     }
 }
 
@@ -62,15 +72,14 @@ void hash_to_string(const char *password, char *output) {
 }
 
 void FirstUserCreator() {
-    // Verifica se o arquivo já existe
     FILE* file = fopen(USERS_FILE, "rb");
     if (file != NULL) {
         fread(&num_users, sizeof(int), 1, file);
         fclose(file);
-        return; // Se o arquivo existe, não precisa criar o admin
+        registarLog("SISTEMA", "Ficheiro de utilizadores já existe - administrador não criado");
+        return;
     }
 
-    // Se o arquivo não existe, cria o admin
     USERS admin;
     admin.id = 1;
     strcpy(admin.username, "admin");
@@ -79,23 +88,23 @@ void FirstUserCreator() {
     hash_to_string("admin", admin.password);
     admin.tipoUser = ADMINISTRADOR;
     
-    // Salva o admin no arquivo
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
-        printf("Erro ao criar arquivo de utilizadores!\n");
+        printf("Erro ao criar ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Falha ao criar ficheiro de utilizadores - erro de permissão");
         return;
     }
     
-    num_users = 1; // Define o número de utilizadores como 1
+    num_users = 1;
     fwrite(&num_users, sizeof(int), 1, file);
     fwrite(&admin, sizeof(USERS), 1, file);
     fclose(file);
     
-    // Atualiza o array em memória
     users[0] = admin;
     num_users = 1;
     
-    printf("Utilizador admin criado com sucesso!\n");
+    printf("Utilizador administrador criado com sucesso!\n");
+    registarLog("SISTEMA", "Utilizador administrador criado com sucesso");
 }
 
 bool login() {
@@ -111,68 +120,47 @@ bool login() {
     printf("Password: ");
     lerPassword(password, sizeof(password));
 
-    // Encripta a password inserida para comparação
     hash_to_string(password, hashed_password);
+    registarLog("SISTEMA", "Tentativa de início de sessão iniciada");
 
-    // Abre o arquivo de utilizadores
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Falha no início de sessão - ficheiro de utilizadores não encontrado");
         return false;
     }
-
-    // Verifica o tamanho do arquivo
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    printf("\nDEBUG: Tamanho do arquivo: %ld bytes\n", file_size);
 
     int num_users_file;
     if (fread(&num_users_file, sizeof(int), 1, file) != 1) {
         printf("Erro ao ler número de utilizadores!\n");
+        registarLog("SISTEMA", "Falha no início de sessão - erro ao ler número de utilizadores");
         fclose(file);
         return false;
     }
 
-    printf("DEBUG: Número de usuários no arquivo: %d\n", num_users_file);
-    printf("DEBUG: Tamanho da estrutura USERS: %zu bytes\n", sizeof(USERS));
-
-    // Lê todos os usuários do arquivo
     USERS* users = malloc(num_users_file * sizeof(USERS));
     for (int i = 0; i < num_users_file; i++) {
-        long posicao = ftell(file);
-        printf("\nDEBUG: Posição no arquivo antes de ler usuário %d: %ld\n", i + 1, posicao);
-        
         if (fread(&users[i], sizeof(USERS), 1, file) != 1) {
-            printf("Erro ao ler utilizador do arquivo!\n");
+            printf("Erro ao ler utilizador do ficheiro!\n");
+            registarLog("SISTEMA", "Falha no início de sessão - erro ao ler dados dos utilizadores");
             free(users);
             fclose(file);
             return false;
         }
-
-        printf("DEBUG: Usuário %d lido:\n", i + 1);
-        printf("Username: [%s]\n", users[i].username);
-        printf("Password hash: [%s]\n", users[i].password);
-        printf("Tipo: %s\n", users[i].tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
-        printf("Primeiro Nome: [%s]\n", users[i].primeiroNome);
-        printf("Último Nome: [%s]\n", users[i].ultimoNome);
     }
     fclose(file);
 
-    // Procura o usuário
     bool login_sucesso = false;
     for (int i = 0; i < num_users_file; i++) {
         if (strcmp(users[i].username, username) == 0) {
-            printf("\nDEBUG: Username encontrado!\n");
-            printf("Hash inserido: %s\n", hashed_password);
-            printf("Hash armazenado: %s\n", users[i].password);
-
             if (strcmp(users[i].password, hashed_password) == 0) {
                 current_user = users[i];
                 login_sucesso = true;
+                registarLog(username, "Início de sessão realizado com sucesso");
                 break;
             } else {
-                printf("Password incorreta!\n");
+                printf("Palavra-passe incorreta!\n");
+                registarLog(username, "Tentativa de início de sessão falhou - palavra-passe incorreta");
                 break;
             }
         }
@@ -181,19 +169,18 @@ bool login() {
 
     if (login_sucesso) {
         if (guardarSessao(&current_user)) {
-            registarLog(username, "Login realizado com sucesso");
             return true;
         } else {
             printf("Erro ao guardar sessão!\n");
-            registarLog(username, "Falha ao guardar sessão");
+            registarLog(username, "Falha ao guardar sessão após início de sessão");
             clickEnter();
             return false;
         }
     }
 
     if (!login_sucesso) {
-        printf("Login falhou! Username ou password incorretos.\n");
-        registarLog(username, "Tentativa de login falhou - credenciais inválidas");
+        printf("Início de sessão falhou! Username ou palavra-passe incorretos.\n");
+        registarLog(username, "Tentativa de início de sessão falhou - credenciais inválidas");
         clickEnter();
     }
     return false;
@@ -203,8 +190,8 @@ void registo(bool criar_admin) {
     USERS novo_user;
     char password[50];
 
-    // Inicializa todos os campos com zeros
     memset(&novo_user, 0, sizeof(USERS));
+    registarLog("SISTEMA", "Iniciando processo de registo");
 
     printf("\n=== Registo ===\n");
     
@@ -223,99 +210,95 @@ void registo(bool criar_admin) {
     printf("Password: ");
     lerPassword(password, sizeof(password));
 
-    // Encripta a password antes de guardar
     hash_to_string(password, novo_user.password);
-
-    // Define o tipo de utilizador baseado no parâmetro criar_admin
     novo_user.tipoUser = criar_admin ? ADMINISTRADOR : TECNICO;
 
-    // Verifica se o diretório users existe
     #ifdef _WIN32
     system("if not exist users mkdir users");
     #else
     system("mkdir -p users");
     #endif
 
-    // Lê o número atual de usuários
     FILE* file = fopen(USERS_FILE, "rb");
     int num_users = 0;
     if (file != NULL) {
         fread(&num_users, sizeof(int), 1, file);
         fclose(file);
+        registarLog("SISTEMA", "Número atual de utilizadores carregado");
     }
 
-    // Incrementa o número de usuários
     num_users++;
 
-    // Se for o primeiro usuário, cria o arquivo com o número de usuários
     if (num_users == 1) {
         file = fopen(USERS_FILE, "wb");
         if (file == NULL) {
-            printf("Erro ao criar arquivo de utilizadores!\n");
+            printf("Erro ao criar ficheiro de utilizadores!\n");
+            registarLog("SISTEMA", "Falha ao criar ficheiro de utilizadores - erro de permissão");
             return;
         }
         fwrite(&num_users, sizeof(int), 1, file);
         fclose(file);
+        registarLog("SISTEMA", "Ficheiro de utilizadores criado");
     } else {
-        // Atualiza o número de usuários no início do arquivo
         file = fopen(USERS_FILE, "r+b");
         if (file == NULL) {
-            printf("Erro ao abrir arquivo de utilizadores!\n");
+            printf("Erro ao abrir ficheiro de utilizadores!\n");
+            registarLog("SISTEMA", "Falha ao abrir ficheiro de utilizadores - erro de permissão");
             return;
         }
         fwrite(&num_users, sizeof(int), 1, file);
         fclose(file);
+        registarLog("SISTEMA", "Número de utilizadores atualizado");
     }
 
-    // Adiciona o novo usuário ao final do arquivo
     file = fopen(USERS_FILE, "ab");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Falha ao abrir ficheiro para adicionar novo utilizador");
         return;
     }
 
-    // Escreve o novo usuário
     fwrite(&novo_user, sizeof(USERS), 1, file);
     fclose(file);
 
-    printf("\nDEBUG: Usuário registrado:\n");
-    printf("Username: %s\n", novo_user.username);
-    printf("Password hash: %s\n", novo_user.password);
-    printf("Tipo: %s\n", novo_user.tipoUser == ADMINISTRADOR ? "Administrador" : "Técnico");
-    printf("Primeiro Nome: %s\n", novo_user.primeiroNome);
-    printf("Último Nome: %s\n", novo_user.ultimoNome);
-
     printf("\nRegisto realizado com sucesso!\n");
-    registarLog(novo_user.username, criar_admin ? "Novo administrador registrado" : "Novo técnico registrado");
+    registarLog(novo_user.username, criar_admin ? "Novo administrador registado" : "Novo técnico registado");
     clickEnter();
 }
 
 void logout() {
     USERS* user = verificarSessaoAtiva();
     if (user != NULL) {
-        registarLog(user->username, "Logout realizado");
+        registarLog(user->username, "Fim de sessão realizado");
     }
     
     if (remove("users/sessao.dat") == 0) {
-        printf("\nLogout realizado com sucesso!\n");
+        printf("\nFim de sessão realizado com sucesso!\n");
+        registarLog("SISTEMA", "Ficheiro de sessão removido com sucesso");
     } else {
-        printf("\nErro ao realizar logout!\n");
-        registarLog("SISTEMA", "Erro ao realizar logout");
+        printf("\nErro ao realizar fim de sessão!\n");
+        registarLog("SISTEMA", "Erro ao remover ficheiro de sessão");
     }
     clickEnter();
-    menuPrincipal(); // Retorna ao menu inicial após o logout
+    menuPrincipal();
 }
+
 USERS* verificarSessaoAtiva() {
     FILE *f = fopen("users/sessao.dat", "rb");
-    if (!f) return NULL;
+    if (!f) {
+        registarLog("SISTEMA", "Nenhuma sessão ativa encontrada");
+        return NULL;
+    }
 
     static USERS user;
     if (fread(&user, sizeof(USERS), 1, f) != 1) {
         fclose(f);
+        registarLog("SISTEMA", "Erro ao ler dados da sessão");
         return NULL;
     }
 
     fclose(f);
+    registarLog("SISTEMA", "Sessão ativa verificada com sucesso");
     return &user;
 }
 
@@ -323,8 +306,8 @@ void listarUtilizadores() {
     printf("\n=== Lista de Utilizadores ===\n");
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao listar utilizadores - arquivo não encontrado");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao listar utilizadores - ficheiro não encontrado");
         return;
     }
 
@@ -351,8 +334,8 @@ void listarUtilizadores() {
 void removerUtilizador(const char* username) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao remover utilizador - arquivo não encontrado");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao remover utilizador - ficheiro não encontrado");
         return;
     }
 
@@ -383,8 +366,8 @@ void removerUtilizador(const char* username) {
 
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
-        printf("Erro ao salvar arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao remover utilizador - falha ao salvar arquivo");
+        printf("Erro ao salvar ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao remover utilizador - falha ao salvar ficheiro");
         free(users);
         return;
     }
@@ -407,8 +390,8 @@ void removerUtilizador(const char* username) {
 void modificarTipoUtilizador(const char* username, int novo_tipo) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - arquivo não encontrado");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - ficheiro não encontrado");
         return;
     }
 
@@ -436,8 +419,8 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
 
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
-        printf("Erro ao salvar arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - falha ao salvar arquivo");
+        printf("Erro ao salvar ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao modificar tipo de utilizador - falha ao salvar ficheiro");
         free(users);
         return;
     }
@@ -461,8 +444,8 @@ void modificarTipoUtilizador(const char* username, int novo_tipo) {
 void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
     FILE* file = fopen(USERS_FILE, "rb");
     if (file == NULL) {
-        printf("Erro ao abrir arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao alterar password - arquivo não encontrado");
+        printf("Erro ao abrir ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao alterar password - ficheiro não encontrado");
         return;
     }
 
@@ -492,8 +475,8 @@ void alterarPasswordUtilizador(const char* username, const char* nova_senha) {
 
     file = fopen(USERS_FILE, "wb");
     if (file == NULL) {
-        printf("Erro ao salvar arquivo de utilizadores!\n");
-        registarLog("SISTEMA", "Erro ao alterar password - falha ao salvar arquivo");
+        printf("Erro ao salvar ficheiro de utilizadores!\n");
+        registarLog("SISTEMA", "Erro ao alterar password - falha ao salvar ficheiro");
         free(users);
         return;
     }

@@ -39,6 +39,14 @@ typedef struct {
     time_t data_uso;
 } Ferramenta;
 
+// Estrutura para respostas aos incidentes
+typedef struct {
+    time_t data_hora;
+    char resposta[1000];
+    char autor[50];
+    bool solucao;  // Indica se esta resposta resolveu o incidente
+} RespostaIncidente;
+
 // Estrutura principal do incidente
 typedef struct Incidente {
     int id;
@@ -54,6 +62,8 @@ typedef struct Incidente {
     int num_acoes;
     Ferramenta* ferramentas;
     int num_ferramentas;
+    RespostaIncidente* respostas;  // Array de respostas
+    int num_respostas;            // Número de respostas
 } Incidente;
 
 // Estrutura para lista duplamente ligada
@@ -86,5 +96,10 @@ void ordenarPorDataCriacao(ELEM* inicio);
 void ordenarPorEstado(ELEM* inicio);
 void ordenarPorTecnico(ELEM* inicio);
 void trocarIncidentes(ELEM* a, ELEM* b);
+
+// Funções para gestão de respostas
+void adicionarResposta(ELEM* elem, const char* resposta, const char* autor, bool solucao);
+void listarRespostas(ELEM* elem);
+void marcarRespostaComoSolucao(ELEM* elem, int indice_resposta);
 
 #endif // INCIDENTES_H
