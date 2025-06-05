@@ -8,10 +8,12 @@
 #include "../utils/utils.h"
 
 typedef struct {
-    char username[50];
-    char acao[100];
-    time_t data_hora;
+    int id;                 // ID único do log
+    char username[50];      // Nome do utilizador
+    char acao[100];         // Ação realizada
+    time_t data_hora;       // Data e hora da ação
 } Log;
+
 
 void registarLog(const char* username, const char* acao);
 void mostrarLogs();

@@ -1,0 +1,71 @@
+=== Relatório de Incidentes ===
+Período: Thu May 29 17:23:35 2025
+ a Thu May 29 17:23:35 2025
+
+
+=== Estatísticas Gerais ===
+Total de Incidentes: 5
+Incidentes Resolvidos: 0 (0,00%)
+Tempo Médio de Resolução: 0,00 segundos
+
+=== Incidentes por Tipo ===
+Hardware: 0 (0,00%)
+Software: 5 (100,00%)
+Rede: 0 (0,00%)
+
+=== Incidentes por Severidade ===
+Baixa: 0 (0,00%)
+Média: 5 (100,00%)
+Alta: 0 (0,00%)
+
+=== Incidentes por Estado ===
+Por Tratar: 5 (100,00%)
+Em Análise: 0 (0,00%)
+Resolvidos: 0 (0,00%)
+
+=== Lista Detalhada de Incidentes ===
+
+ID: 2
+Tipo: Phishing
+Data/Hora: Thu Jun 05 16:27:01 2025
+Descrição: 1
+Severidade: Média
+Estado: Por Tratar
+Técnico: 
+------------------------
+
+ID: 3
+Tipo: Phishing
+Data/Hora: Thu Jun 05 16:27:03 2025
+Descrição: 1
+Severidade: Média
+Estado: Por Tratar
+Técnico: 
+------------------------
+
+ID: 4
+Tipo: Phishing
+Data/Hora: Thu Jun 05 16:27:04 2025
+Descrição: 1
+Severidade: Média
+Estado: Por Tratar
+Técnico: 
+------------------------
+
+ID: 5
+Tipo: Phishing
+Data/Hora: Thu Jun 05 16:27:05 2025
+Descrição: 1
+Severidade: Média
+Estado: Por Tratar
+Técnico: 
+------------------------
+
+ID: 6
+Tipo: Phishing
+Data/Hora: Thu Jun 05 16:27:09 2025
+Descrição: 1
+Severidade: Média
+Estado: Por Tratar
+Técnico: 
+------------------------

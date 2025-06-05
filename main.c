@@ -23,7 +23,20 @@ int main(){
     clickEnter();
 
     // Carregar incidentes do ficheiro
+    printf("\nCarregando incidentes do arquivo...\n");
     lista_incidentes = carregarIncidentes("incidentes.bin");
+    if (lista_incidentes) {
+        printf("Incidentes carregados com sucesso!\n");
+        ELEM* atual = lista_incidentes;
+        int count = 0;
+        while (atual) {
+            count++;
+            atual = atual->proximo;
+        }
+        printf("Total de incidentes carregados: %d\n", count);
+    } else {
+        printf("Nenhum incidente encontrado ou erro ao carregar.\n");
+    }
     
     // Carregar logs do ficheiro
     carregarLogs("logs.bin");
@@ -43,7 +56,9 @@ int main(){
     }
 
     // Salvar incidentes antes de sair
+    printf("\nSalvando incidentes...\n");
     guardarIncidentes(lista_incidentes, "incidentes.bin");
+    printf("Incidentes salvos com sucesso!\n");
     
     // Salvar logs antes de sair
     guardarLogs("logs.bin");

@@ -13,19 +13,21 @@ static int num_logs = 0;
 
 void registarLog(const char* username, const char* acao) {
     if (num_logs >= MAX_LOGS) {
-        printf("Aviso: Número máximo de logs atingido!\n");
+        printf("Número máximo de logs atingido!\n");
         return;
     }
 
-    Log* novo_log = &logs[num_logs];
-    strncpy(novo_log->username, username, sizeof(novo_log->username) - 1);
-    novo_log->username[sizeof(novo_log->username) - 1] = '\0';
+    Log novo_log;
+    novo_log.id = num_logs + 1;  // Atribuir ID sequencial
+    strncpy(novo_log.username, username, sizeof(novo_log.username) - 1);
+    novo_log.username[sizeof(novo_log.username) - 1] = '\0';
     
-    strncpy(novo_log->acao, acao, sizeof(novo_log->acao) - 1);
-    novo_log->acao[sizeof(novo_log->acao) - 1] = '\0';
+    strncpy(novo_log.acao, acao, sizeof(novo_log.acao) - 1);
+    novo_log.acao[sizeof(novo_log.acao) - 1] = '\0';
     
-    novo_log->data_hora = time(NULL);
-    num_logs++;
+    novo_log.data_hora = time(NULL);
+
+    logs[num_logs++] = novo_log;
 }
 
 void mostrarLogs() {
@@ -91,55 +93,65 @@ void mostrarLogsPorPeriodo(time_t inicio, time_t fim) {
 void guardarLogs(const char* ficheiro) {
     FILE* file = fopen(ficheiro, "w");
     if (file == NULL) {
-        printf("Erro ao abrir ficheiro para guardar logs!\n");
-        registarLog("SISTEMA", "Erro ao guardar logs - ficheiro não encontrado");
+        printf("Erro ao abrir ficheiro de logs!\n");
+        registarLog("SISTEMA", "Falha ao abrir ficheiro de logs - erro de permissão");
         return;
     }
 
-    fprintf(file, "%d\n", num_logs);
     for (int i = 0; i < num_logs; i++) {
-        fprintf(file, "%s|%s|%ld\n", 
-                logs[i].username,
-                logs[i].acao,
-                logs[i].data_hora);
+        Log* log = &logs[i];
+        char data_str[32];
+        struct tm* tm = localtime(&log->data_hora);
+        strftime(data_str, sizeof(data_str), "%Y-%m-%d %H:%M:%S", tm);
+        
+        fprintf(file, "%d|%s|%s|%s\n",
+            log->id,
+            log->username,
+            log->acao,
+            data_str);
     }
 
     fclose(file);
-    printf("Logs guardados com sucesso no ficheiro %s!\n", ficheiro);
-
-    USERS* current_user = verificarSessaoAtiva();
-    if (current_user != NULL) {
-        char log_message[150];
-        snprintf(log_message, sizeof(log_message), "Guardou os logs no ficheiro %s", ficheiro);
-        registarLog(current_user->username, log_message);
-    }
+    registarLog("SISTEMA", "Logs guardados com sucesso");
 }
 
 void carregarLogs(const char* ficheiro) {
     FILE* file = fopen(ficheiro, "r");
     if (file == NULL) {
-        registarLog("SISTEMA", "Erro ao carregar logs - ficheiro não encontrado");
+        printf("Erro ao abrir ficheiro de logs!\n");
+        registarLog("SISTEMA", "Falha ao abrir ficheiro de logs - erro de permissão");
         return;
     }
 
-    char linha[1024];
-    if (fgets(linha, sizeof(linha), file) != NULL) {
-        num_logs = atoi(linha);
-    }
+    char linha[256];
+    num_logs = 0;
 
-    for (int i = 0; i < num_logs && fgets(linha, sizeof(linha), file) != NULL; i++) {
-        char* username = strtok(linha, "|");
-        char* acao = strtok(NULL, "|");
-        char* data_str = strtok(NULL, "\n");
-
-        if (username && acao && data_str) {
-            strncpy(logs[i].username, username, sizeof(logs[i].username) - 1);
-            logs[i].username[sizeof(logs[i].username) - 1] = '\0';
+    while (fgets(linha, sizeof(linha), file) && num_logs < MAX_LOGS) {
+        Log* log = &logs[num_logs];
+        char data_str[32];
+        
+        if (sscanf(linha, "%d|%[^|]|%[^|]|%[^\n]", 
+            &log->id,
+            log->username,
+            log->acao,
+            data_str) == 4) {
             
-            strncpy(logs[i].acao, acao, sizeof(logs[i].acao) - 1);
-            logs[i].acao[sizeof(logs[i].acao) - 1] = '\0';
+            struct tm tm = {0};  // Inicializar todos os campos com 0
+            int ano, mes, dia, hora, min, seg;
             
-            logs[i].data_hora = atol(data_str);
+            if (sscanf(data_str, "%d-%d-%d %d:%d:%d", 
+                &ano, &mes, &dia, &hora, &min, &seg) == 6) {
+                
+                tm.tm_year = ano - 1900;  // Ano desde 1900
+                tm.tm_mon = mes - 1;      // Mês 0-11
+                tm.tm_mday = dia;
+                tm.tm_hour = hora;
+                tm.tm_min = min;
+                tm.tm_sec = seg;
+                
+                log->data_hora = mktime(&tm);
+                num_logs++;
+            }
         }
     }
 

@@ -38,7 +38,7 @@ bool guardarSessao(USERS *user) {
     return true;
 }
 
-// Função para salvar o número de usuários no arquivo
+// Função para guardar o número de utilizadores no arquivo
 void save_user_count() {
     FILE *file = fopen(USERS_FILE, "wb");
     if (file != NULL) {

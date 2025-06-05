@@ -7,12 +7,13 @@
 
 // Enumerações
 typedef enum {
-    PHISHING,
-    MALWARE,
-    ACESSO_NAO_AUTORIZADO,
-    OUTRO
+    PHISHING = 1,
+    MALWARE = 2,
+    ACESSO_NAO_AUTORIZADO = 3,
+    OUTRO = 4
 } TipoIncidente;
 
+// Enum para os estados do incidente
 typedef enum {
     POR_TRATAR,
     EM_ANALISE,
@@ -28,6 +29,7 @@ typedef enum {
 
 // Estrutura para histórico de ações
 typedef struct {
+    int id;
     time_t data_hora;
     char descricao[500];
     char tecnico[50];
@@ -35,12 +37,14 @@ typedef struct {
 
 // Estrutura para ferramentas utilizadas
 typedef struct {
+    int id;
     char nome[100];
     time_t data_uso;
 } Ferramenta;
 
 // Estrutura para respostas aos incidentes
 typedef struct {
+    int id;
     time_t data_hora;
     char resposta[1000];
     char autor[50];
@@ -51,19 +55,19 @@ typedef struct {
 typedef struct Incidente {
     int id;
     TipoIncidente tipo;
-    time_t data_hora;
-    char descricao[500];
+    char descricao[100];
+    int tempo_estimado;
     Severidade severidade;
+    time_t data_hora;
     EstadoIncidente estado;
     char tecnico_responsavel[50];
-    time_t tempo_estimado;
-    time_t tempo_real;
+    int tempo_real;
     HistoricoAcao* historico;
-    int num_acoes;
     Ferramenta* ferramentas;
+    RespostaIncidente* respostas;
+    int num_acoes;
     int num_ferramentas;
-    RespostaIncidente* respostas;  // Array de respostas
-    int num_respostas;            // Número de respostas
+    int num_respostas;
 } Incidente;
 
 // Estrutura para lista duplamente ligada
@@ -75,7 +79,7 @@ typedef struct Elem {
 
 // Funções para gestão de incidentes
 bool verificarIncidentesExistentes(ELEM* lista);
-ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, Severidade severidade);
+ELEM* criarIncidente(TipoIncidente tipo, const char* descricao, int tempo_estimado, Severidade severidade);
 void adicionarIncidente(ELEM** lista, ELEM* novo);
 void removerIncidente(ELEM** lista, int id);
 ELEM* procurarIncidente(ELEM* lista, int id);
@@ -101,5 +105,9 @@ void trocarIncidentes(ELEM* a, ELEM* b);
 void adicionarResposta(ELEM* elem, const char* resposta, const char* autor, bool solucao);
 void listarRespostas(ELEM* elem);
 void marcarRespostaComoSolucao(ELEM* elem, int indice_resposta);
+
+// Funções de relatório
+void gerarRelatorioEstatistico(ELEM* lista, const char* ficheiro, time_t inicio, time_t fim);
+void gerarRelatorioPeriodico(ELEM* lista);
 
 #endif // INCIDENTES_H

@@ -33,4 +33,7 @@ void calcularTempoMedioResolucao(ELEM* lista, const char* tecnico);
 void menuGestaoUsers();
 void menuLogs();
 
+// Funções de relatório
+void gerarRelatorioPeriodico(ELEM* lista);
+
 #endif 
