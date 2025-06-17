@@ -1,4 +1,18 @@
-# Módulo de Gestão de Utilizadores
+# Módulo Users
+
+Este módulo é responsável pela gestão de utilizadores no sistema, incluindo login, registo e gestão de sessões.
+
+## Funcionalidades Implementadas
+
+- **Login**: Permite aos utilizadores iniciar sessão no sistema.
+- **Registo**: Permite a criação de novos utilizadores, com opção para criar administradores.
+- **Gestão de Sessões**: Controla as sessões ativas dos utilizadores.
+- **Alteração de Senha**: Permite aos utilizadores alterar suas senhas.
+- **Listagem de Utilizadores**: Lista todos os utilizadores registrados no sistema.
+
+## Utilização
+
+Este módulo é essencial para a segurança e gestão do sistema, garantindo que apenas utilizadores autorizados possam acessar as funcionalidades do sistema.
 
 ## Descrição
 Este módulo gere todas as operações relacionadas com utilizadores do sistema, incluindo autenticação, registo e gestão de perfis.

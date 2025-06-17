@@ -1,4 +1,15 @@
-# Módulo de Sistema de Logs
+# Módulo Logs
+
+Este módulo é responsável pelo registro de logs no sistema, permitindo o rastreamento de ações dos utilizadores.
+
+## Funcionalidades Implementadas
+
+- **Registro de Logs**: Registra todas as ações realizadas pelos utilizadores, incluindo login, registo e alterações em incidentes.
+- **Visualização de Logs**: Permite visualizar os logs registrados, facilitando a auditoria e o rastreamento de atividades.
+
+## Utilização
+
+Este módulo é crucial para a segurança e auditoria do sistema, garantindo que todas as ações sejam registradas e possam ser revisadas quando necessário.
 
 ## Descrição
 Este módulo gere o registo de todas as operações realizadas no sistema, permitindo a sua auditoria e a rastreabilidade das ações dos utilizadores.

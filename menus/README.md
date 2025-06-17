@@ -1,4 +1,17 @@
-# Módulo de Interfaces de Utilizador
+# Módulo Menus
+
+Este módulo é responsável pela interface de utilizador, fornecendo menus para navegação entre as diferentes funcionalidades do sistema.
+
+## Funcionalidades Implementadas
+
+- **Menu Principal**: Interface inicial do sistema, permitindo acesso a todas as funcionalidades.
+- **Menu de Gestão de Incidentes**: Permite a gestão de incidentes, incluindo criação, atualização e remoção.
+- **Menu de Gestão de Utilizadores**: Permite a gestão de utilizadores, incluindo login, registo e alteração de senha.
+- **Menu de Logs**: Permite visualizar os logs do sistema, registrando ações dos utilizadores.
+
+## Utilização
+
+Este módulo é essencial para a usabilidade do sistema, fornecendo uma interface clara e intuitiva para os utilizadores navegarem e interagirem com as funcionalidades do sistema.
 
 ## Descrição
 Este módulo gere todas as interfaces de utilizador do sistema, incluindo menus e submenus para diferentes tipos de utilizadores.

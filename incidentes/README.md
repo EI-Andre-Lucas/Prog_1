@@ -1,4 +1,18 @@
-# Módulo de Gestão de Incidentes
+# Módulo Incidentes
+
+Este módulo é responsável pela gestão de incidentes no sistema, incluindo criação, atualização e remoção de incidentes.
+
+## Funcionalidades Implementadas
+
+- **Criação de Incidentes**: Permite a criação de novos incidentes com detalhes como tipo, descrição, tempo estimado e severidade.
+- **Atualização de Estado**: Permite atualizar o estado de um incidente (por exemplo, de "Aberto" para "Resolvido").
+- **Remoção de Incidentes**: Permite remover incidentes do sistema.
+- **Histórico de Ações**: Mantém um histórico de ações realizadas em cada incidente.
+- **Ferramentas Utilizadas**: Registra as ferramentas utilizadas durante a resolução de incidentes.
+
+## Utilização
+
+Este módulo é crucial para o rastreamento e resolução de incidentes, garantindo que todos os detalhes e ações sejam registrados e acessíveis.
 
 ## Descrição
 Este módulo gere todas as operações relacionadas com incidentes técnicos, incluindo criação, atribuição, atualização e resolução de incidentes.

@@ -1,4 +1,17 @@
-# Módulo de Funções Utilitárias
+# Módulo Utils
+
+Este módulo contém funções utilitárias que são utilizadas em todo o sistema para facilitar operações comuns.
+
+## Funções Implementadas
+
+- **clickEnter()**: Aguarda o utilizador pressionar a tecla Enter para continuar.
+- **limparEcra()**: Limpa a tela do terminal.
+- **limparBuffer()**: Limpa o buffer de entrada para evitar problemas com entradas de dados.
+- **lerPassword(char* password, int tamanho_max)**: Lê uma senha de forma segura, ocultando os caracteres digitados.
+
+## Utilização
+
+Estas funções são utilizadas em vários módulos do sistema para garantir uma experiência de utilizador consistente e segura. Por exemplo, `lerPassword` é usada durante o login e registo de utilizadores para garantir que as senhas não sejam exibidas na tela.
 
 ## Descrição
 Este módulo contém funções utilitárias utilizadas em todo o sistema, fornecendo funcionalidades comuns e auxiliares.
